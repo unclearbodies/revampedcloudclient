@@ -11,6 +11,7 @@ import dev.cloudmc.gui.hudeditor.HudEditor;
 import dev.cloudmc.gui.hudeditor.impl.HudMod;
 import dev.cloudmc.helpers.render.GLHelper;
 import dev.cloudmc.helpers.render.Helper2D;
+import dev.cloudmc.feature.setting.Setting;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;

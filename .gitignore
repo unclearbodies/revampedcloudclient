@@ -1,0 +1,9 @@
+build/
+.gradle/
+jdk8.tar.gz
+jdk8u412-b08/
+.idea/
+*.iml
+*.iws
+*.ipr
+out/

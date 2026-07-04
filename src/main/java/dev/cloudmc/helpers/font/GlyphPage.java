@@ -65,23 +65,49 @@ public class GlyphPage {
                 Math.ceil(Math.sqrt(maxHeight * maxHeight * chars.length) / maxHeight))
                 * Math.max(maxWidth, maxHeight)) + 1;
 
-        bufferedImage = new BufferedImage(imgSize, imgSize, BufferedImage.TYPE_INT_ARGB);
+        // Perform a pre-layout pass to ensure the texture size is large enough
+        BufferedImage tempImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D gTemp = (Graphics2D) tempImage.getGraphics();
+        gTemp.setFont(font);
+        gTemp.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, fractionalMetrics ? RenderingHints.VALUE_FRACTIONALMETRICS_ON : RenderingHints.VALUE_FRACTIONALMETRICS_OFF);
+        gTemp.setRenderingHint(RenderingHints.KEY_ANTIALIASING, antiAliasing ? RenderingHints.VALUE_ANTIALIAS_OFF : RenderingHints.VALUE_ANTIALIAS_ON);
+        gTemp.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, antiAliasing ? RenderingHints.VALUE_TEXT_ANTIALIAS_ON : RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
+        
+        FontMetrics fontMetrics = gTemp.getFontMetrics();
+        int prePosX = 0;
+        int prePosY = 1;
+        int preCharHeight = 0;
 
+        for (char ch : chars) {
+            Rectangle2D bounds = fontMetrics.getStringBounds(Character.toString(ch), gTemp);
+            int width = bounds.getBounds().width + 8;
+            int height = bounds.getBounds().height;
+
+            if (prePosX + width >= imgSize) {
+                prePosX = 0;
+                prePosY += preCharHeight;
+                preCharHeight = 0;
+            }
+            prePosX += width;
+            if (height > preCharHeight) preCharHeight = height;
+        }
+        
+        int requiredHeight = prePosY + preCharHeight;
+        if (requiredHeight > imgSize) {
+            imgSize = requiredHeight; // Expand square to fit everything perfectly
+        }
+
+        bufferedImage = new BufferedImage(imgSize, imgSize, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) bufferedImage.getGraphics();
 
         g.setFont(font);
-        // Set Color to Transparent
         g.setColor(new Color(255, 255, 255, 0));
-        // Set the image background to transparent
         g.fillRect(0, 0, imgSize, imgSize);
-
         g.setColor(Color.white);
 
         g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, fractionalMetrics ? RenderingHints.VALUE_FRACTIONALMETRICS_ON : RenderingHints.VALUE_FRACTIONALMETRICS_OFF);
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, antiAliasing ? RenderingHints.VALUE_ANTIALIAS_OFF : RenderingHints.VALUE_ANTIALIAS_ON);
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, antiAliasing ? RenderingHints.VALUE_TEXT_ANTIALIAS_ON : RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
-
-        FontMetrics fontMetrics = g.getFontMetrics();
 
         int currentCharHeight = 0;
         int posX = 0;
@@ -89,15 +115,10 @@ public class GlyphPage {
 
         for (char ch : chars) {
             Glyph glyph = new Glyph();
-
             Rectangle2D bounds = fontMetrics.getStringBounds(Character.toString(ch), g);
 
-            glyph.width = bounds.getBounds().width + 8; // Leave some additional space
+            glyph.width = bounds.getBounds().width + 8;
             glyph.height = bounds.getBounds().height;
-
-            if (posY + glyph.height >= imgSize) {
-                Cloud.INSTANCE.messageHelper.showMessage("Font", "Selected Font might not work as expected!");
-            }
 
             if (posX + glyph.width >= imgSize) {
                 posX = 0;
@@ -109,15 +130,12 @@ public class GlyphPage {
             glyph.y = posY;
 
             if (glyph.height > maxFontHeight) maxFontHeight = glyph.height;
-
             if (glyph.height > currentCharHeight) currentCharHeight = glyph.height;
 
             g.drawString(Character.toString(ch), posX + 2, posY + fontMetrics.getAscent());
 
             posX += glyph.width;
-
             glyphCharacterMap.put(ch, glyph);
-
         }
     }
 
@@ -136,7 +154,7 @@ public class GlyphPage {
     public float drawChar(char ch, float x, float y) {
         Glyph glyph = glyphCharacterMap.get(ch);
 
-        if (glyph == null) throw new IllegalArgumentException("'" + ch + "' wasn't found");
+        if (glyph == null) return 0;
 
         float pageX = glyph.x / (float) imgSize;
         float pageY = glyph.y / (float) imgSize;
@@ -147,34 +165,25 @@ public class GlyphPage {
         float width = glyph.width;
         float height = glyph.height;
 
-        glBegin(GL_TRIANGLES);
+        net.minecraft.client.renderer.Tessellator tessellator = net.minecraft.client.renderer.Tessellator.getInstance();
+        net.minecraft.client.renderer.WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+        worldrenderer.begin(GL_TRIANGLES, net.minecraft.client.renderer.vertex.DefaultVertexFormats.POSITION_TEX);
 
-        glTexCoord2f(pageX + pageWidth, pageY);
-        glVertex2f(x + width, y);
+        worldrenderer.pos(x + width, y, 0).tex(pageX + pageWidth, pageY).endVertex();
+        worldrenderer.pos(x, y, 0).tex(pageX, pageY).endVertex();
+        worldrenderer.pos(x, y + height, 0).tex(pageX, pageY + pageHeight).endVertex();
+        worldrenderer.pos(x, y + height, 0).tex(pageX, pageY + pageHeight).endVertex();
+        worldrenderer.pos(x + width, y + height, 0).tex(pageX + pageWidth, pageY + pageHeight).endVertex();
+        worldrenderer.pos(x + width, y, 0).tex(pageX + pageWidth, pageY).endVertex();
 
-        glTexCoord2f(pageX, pageY);
-        glVertex2f(x, y);
-
-        glTexCoord2f(pageX, pageY + pageHeight);
-        glVertex2f(x, y + height);
-
-        glTexCoord2f(pageX, pageY + pageHeight);
-        glVertex2f(x, y + height);
-
-        glTexCoord2f(pageX + pageWidth, pageY + pageHeight);
-        glVertex2f(x + width, y + height);
-
-        glTexCoord2f(pageX + pageWidth, pageY);
-        glVertex2f(x + width, y);
-
-
-        glEnd();
+        tessellator.draw();
 
         return width - 8;
     }
 
     public float getWidth(char ch) {
-        return glyphCharacterMap.get(ch).width;
+        Glyph glyph = glyphCharacterMap.get(ch);
+        return glyph == null ? 0 : glyph.width;
     }
 
     public int getMaxFontHeight() {

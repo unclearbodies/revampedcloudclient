@@ -8,6 +8,7 @@ import dev.cloudmc.Cloud;
 import dev.cloudmc.feature.mod.Mod;
 import dev.cloudmc.feature.mod.Type;
 import dev.cloudmc.feature.setting.Setting;
+import java.awt.Color;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
@@ -16,7 +17,16 @@ import org.lwjgl.input.Keyboard;
 
 public class ToggleSprintMod extends Mod {
 
-    private static boolean toggled = false;
+    private boolean toggled = false;
+    private boolean wasDown = false;
+
+    private Setting keybindingSetting;
+    private Setting modeSetting;
+    private Setting backgroundSetting;
+    private Setting fontColorSetting;
+
+    private WTapMod cachedWTapMod;
+    private boolean wTapLookedUp = false;
 
     public ToggleSprintMod() {
         super(
@@ -24,41 +34,50 @@ public class ToggleSprintMod extends Mod {
                 "Allows you to toggle the Sprint button instead of holding it.",
                 Type.Mechanic
         );
-        Cloud.INSTANCE.settingManager.addSetting(new Setting("Keybinding", this, Keyboard.KEY_LCONTROL));
 
-        String[] mode = {"Modern", "Legacy"};
-        Cloud.INSTANCE.settingManager.addSetting(new Setting("Mode", this, "Modern", 0, mode));
-        Cloud.INSTANCE.settingManager.addSetting(new Setting("Background", this, true));
-        Cloud.INSTANCE.settingManager.addSetting(new Setting("Font Color", this, new Color(255, 255, 255), new Color(255, 0, 0), 0, new float[]{0, 0}));
+        keybindingSetting = new Setting("Keybinding", this, Keyboard.KEY_LCONTROL);
+        modeSetting = new Setting("Mode", this, "Modern", 0, new String[]{"Modern", "Legacy"});
+        backgroundSetting = new Setting("Background", this, true);
+        fontColorSetting = new Setting("Font Color", this, new Color(255, 255, 255), new Color(255, 0, 0), 0, new float[]{0, 0});
+
+        Cloud.INSTANCE.settingManager.addSetting(keybindingSetting);
+        Cloud.INSTANCE.settingManager.addSetting(modeSetting);
+        Cloud.INSTANCE.settingManager.addSetting(backgroundSetting);
+        Cloud.INSTANCE.settingManager.addSetting(fontColorSetting);
     }
 
-    public static boolean isSprinting() {
+    private WTapMod getWTapMod() {
+        if (!wTapLookedUp) {
+            cachedWTapMod = (WTapMod) Cloud.INSTANCE.modManager.getMod("W-Tap");
+            wTapLookedUp = true;
+        }
+        return cachedWTapMod;
+    }
+
+    public boolean isSprinting() {
         return toggled;
     }
 
     @Override
     public void onDisable(){
-        super.onDisable();
         KeyBinding.setKeyBindState(Cloud.INSTANCE.mc.gameSettings.keyBindSprint.getKeyCode(), false);
     }
 
     @SubscribeEvent
     public void onTick(TickEvent.PlayerTickEvent e) {
+        WTapMod wTapMod = getWTapMod();
+        if (wTapMod != null && wTapMod.isToggled() && wTapMod.isActive()) {
+            return;
+        }
         KeyBinding.setKeyBindState(Cloud.INSTANCE.mc.gameSettings.keyBindSprint.getKeyCode(), toggled);
     }
 
-    private boolean wasDown = false;
-
     @SubscribeEvent
     public void key(InputEvent.KeyInputEvent e) {
-        boolean isDown = Keyboard.isKeyDown(getKey());
+        boolean isDown = Keyboard.isKeyDown(keybindingSetting.getKey());
         if (isDown && !wasDown) {
             toggled = !toggled;
         }
         wasDown = isDown;
-    }
-
-    private int getKey(){
-        return Cloud.INSTANCE.settingManager.getSettingByModAndName(getName(), "Keybinding").getKey();
     }
 }

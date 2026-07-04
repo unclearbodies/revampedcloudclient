@@ -231,34 +231,34 @@ public class KillauraCheck {
       if (!cfg.v.detectKillaura) {
          return;
       }
-      Minecraft mc = Minecraft.func_71410_x();
-      if (mc.field_71441_e == null || !PlayerEligibility.shouldCheckPlayer(player)) {
-         this.forgetPlayer(player == null ? null : player.func_110124_au());
+      Minecraft mc = Minecraft.getMinecraft();
+      if (mc.theWorld == null || !PlayerEligibility.shouldCheckPlayer(player)) {
+         this.forgetPlayer(player == null ? null : player.getUniqueID());
          return;
       }
 
-      UUID uuid = player.func_110124_au();
-      long tick = mc.field_71441_e.func_82737_E();
+      UUID uuid = player.getUniqueID();
+      long tick = mc.theWorld.getTotalWorldTime();
       State st = this.states.computeIfAbsent(uuid, (k) -> new State());
 
       // Keep position history fresh for this player and the observer — both
       // are bearing candidates when someone else is the attacker.
-      this.trail(uuid).push(player.field_70165_t, player.field_70161_v, tick);
-      this.trail(mc.field_71439_g.func_110124_au())
-         .push(mc.field_71439_g.field_70165_t, mc.field_71439_g.field_70161_v, tick);
+      this.trail(uuid).push(player.posX, player.posZ, tick);
+      this.trail(mc.thePlayer.getUniqueID())
+         .push(mc.thePlayer.posX, mc.thePlayer.posZ, tick);
 
-      if (player.field_70154_o != null) { // riding: vehicle rotations/consume timing are unreliable
+      if (player.ridingEntity != null) { // riding: vehicle rotations/consume timing are unreliable
          return;
       }
 
       this.consumeComponent(player, st, tick);
 
-      if (player.field_82175_bq) { // isSwingInProgress — the combat signal we can observe
+      if (player.isSwingInProgress) { // isSwingInProgress — the combat signal we can observe
          st.lastSwingTick = tick;
       }
 
-      float yaw = player.field_70177_z;
-      float pitch = player.field_70125_A;
+      float yaw = player.rotationYaw;
+      float pitch = player.rotationPitch;
       if (!st.hasRotation) {
          st.lastYaw = yaw;
          st.lastPitch = pitch;
@@ -273,9 +273,9 @@ public class KillauraCheck {
 
       // Teleport/lag guard: a large position step also snaps observed rotation,
       // which would poison every rotation component with a false "snap".
-      double moveX = player.field_70165_t - player.field_70142_S;
-      double moveY = player.field_70163_u - player.field_70137_T;
-      double moveZ = player.field_70161_v - player.field_70136_U;
+      double moveX = player.posX - player.lastTickPosX;
+      double moveY = player.posY - player.lastTickPosY;
+      double moveZ = player.posZ - player.lastTickPosZ;
       if (moveX * moveX + moveZ * moveZ > 25.0D) {
          st.yawChangeWindow.clear();
          this.resetBurst(st);
@@ -447,7 +447,7 @@ public class KillauraCheck {
       float bestPre = 0.0F;
       float bestPreInside = Float.MAX_VALUE;
       for (EntityPlayer target : targets) {
-         Trail trail = this.trail(target.func_110124_au());
+         Trail trail = this.trail(target.getUniqueID());
          float err = this.minInsideError(player, trail, st.lastYaw);
          if (err < bestErr) {
             bestErr = err;
@@ -490,9 +490,9 @@ public class KillauraCheck {
       EntityPlayer target = null;
       double bestDistSq = Double.MAX_VALUE;
       for (EntityPlayer candidate : targets) {
-         double dx = candidate.field_70165_t - player.field_70165_t;
-         double dy = candidate.field_70163_u - player.field_70163_u;
-         double dz = candidate.field_70161_v - player.field_70161_v;
+         double dx = candidate.posX - player.posX;
+         double dy = candidate.posY - player.posY;
+         double dz = candidate.posZ - player.posZ;
          double distSq = dx * dx + dy * dy + dz * dz;
          if (distSq < bestDistSq) {
             bestDistSq = distSq;
@@ -505,13 +505,13 @@ public class KillauraCheck {
          return;
       }
 
-      UUID targetId = target.func_110124_au();
+      UUID targetId = target.getUniqueID();
       Trail trail = this.trail(targetId);
       float bearingNow = bearingTo(player, trail.x[0], trail.z[0]);
       if (targetId.equals(st.lastTargetId) && !Float.isNaN(st.lastBearing)) {
          float losDelta = Math.abs(wrapDegrees(bearingNow - st.lastBearing));
-         double dx = target.field_70165_t - player.field_70165_t;
-         double dz = target.field_70161_v - player.field_70161_v;
+         double dx = target.posX - player.posX;
+         double dz = target.posZ - player.posZ;
          double horizDist = Math.sqrt(dx * dx + dz * dz);
          // close range makes the hitbox span huge — inside-span is only
          // meaningful from ~2.2 blocks out
@@ -566,14 +566,14 @@ public class KillauraCheck {
 
       // Only flat-ground running is informative: air gliding and knockback
       // carry momentum in directions the yaw never chose, jumps spike |dy|.
-      if (!flat || player.field_70737_aN > 0 || speed < MOVE_MIN_SPEED || speed > MOVE_MAX_SPEED) {
+      if (!flat || player.hurtResistantTime > 0 || speed < MOVE_MIN_SPEED || speed > MOVE_MAX_SPEED) {
          return;
       }
       // Ice keeps momentum pointing away from the yaw for many low-accel ticks
       // even for legit players — useless terrain for every sub-test.
-      Block ground = mc.field_71441_e.func_180495_p(
-         new BlockPos(player.field_70165_t, player.field_70163_u - 0.5D, player.field_70161_v)).func_177230_c();
-      if (ground == Blocks.field_150432_aD || ground == Blocks.field_150403_cj) {
+      Block ground = mc.theWorld.getBlockState(
+         new BlockPos(player.posX, player.posY - 0.5D, player.posZ)).getBlock();
+      if (ground == Blocks.snow_layer || ground == Blocks.waterlily) {
          return;
       }
 
@@ -585,7 +585,7 @@ public class KillauraCheck {
       float residual = bucketResidual(offset);
 
       // sprint-direction leak (tolerant accel gate: orbiting curves gently)
-      if (player.func_70051_ag() && speed > SPRINT_MIN_SPEED && accel < SPRINT_ACCEL
+      if (player.isSprinting() && speed > SPRINT_MIN_SPEED && accel < SPRINT_ACCEL
          && Math.abs(offset) > SPRINT_OFFSET) {
          ++st.sprintDesync;
          this.debug(player, "movement(sprint) tick " + st.sprintDesync + "/" + SPRINT_HITS
@@ -603,7 +603,7 @@ public class KillauraCheck {
       // head pinned inside someone's hitbox while the body walks its own line
       if (residual > LOCK_RESIDUAL) {
          for (EntityPlayer target : targets) {
-            if (this.minInsideError(player, this.trail(target.func_110124_au()), yaw) <= QUANTUM) {
+            if (this.minInsideError(player, this.trail(target.getUniqueID()), yaw) <= QUANTUM) {
                ++st.lockDesync;
                this.debug(player, "movement(lock) tick " + st.lockDesync + "/" + LOCK_HITS
                   + " res=" + (int)residual + (char)176);
@@ -641,10 +641,10 @@ public class KillauraCheck {
 
    /** consume: the old Killaura B — swinging at entities mid eat/drink. */
    private void consumeComponent(EntityPlayer player, State st, long tick) {
-      ItemStack heldItem = player.func_70694_bm();
-      boolean isUsingItem = player.func_71039_bw();
-      boolean isConsumable = heldItem != null && isConsumable(heldItem.func_77973_b());
-      boolean isAttacking = player.field_110158_av > 0;
+      ItemStack heldItem = player.getHeldItem();
+      boolean isUsingItem = player.isUsingItem();
+      boolean isConsumable = heldItem != null && isConsumable(heldItem.getItem());
+      boolean isAttacking = player.swingProgressInt > 0;
 
       if (isUsingItem && isConsumable) {
          ++st.useItemTicks;
@@ -661,9 +661,9 @@ public class KillauraCheck {
          if (cfg.v.debugMessages) {
             // itemRegistry.getNameForObject — vanilla equivalent of Forge's getRegistryName(), which only exists after runtime binpatching
             Rain.addMessage(EnumChatFormatting.YELLOW + "[AntiCheat]: " + EnumChatFormatting.WHITE
-               + player.func_70005_c_() + " consume: swinging while using item | Use Time=" + st.useItemTicks
+               + player.getName() + " consume: swinging while using item | Use Time=" + st.useItemTicks
                + " | Last Ate=" + sinceLastEat + " | vl=" + st.consumeVl
-               + " | Item=" + String.valueOf(Item.field_150901_e.func_177774_c(heldItem.func_77973_b())));
+               + " | Item=" + String.valueOf(Item.getIdFromItem(heldItem.getItem())));
          }
          if (st.consumeVl >= CONSUME_FAIL_VL) {
             this.failedKillaura = true;
@@ -677,17 +677,17 @@ public class KillauraCheck {
    /** Players within aura range of the attacker that could be aim targets. */
    private List<EntityPlayer> targetsNear(Minecraft mc, EntityPlayer attacker, long tick) {
       List<EntityPlayer> out = new ArrayList<EntityPlayer>();
-      for (EntityPlayer p : mc.field_71441_e.field_73010_i) {
+      for (EntityPlayer p : mc.theWorld.playerEntities) {
          if (!PlayerEligibility.shouldUseAsTarget(p, attacker)) {
             continue;
          }
-         double dx = p.field_70165_t - attacker.field_70165_t;
-         double dy = p.field_70163_u - attacker.field_70163_u;
-         double dz = p.field_70161_v - attacker.field_70161_v;
+         double dx = p.posX - attacker.posX;
+         double dy = p.posY - attacker.posY;
+         double dz = p.posZ - attacker.posZ;
          if (dx * dx + dy * dy + dz * dz > TARGET_RANGE_SQ) {
             continue;
          }
-         this.trail(p.func_110124_au()).push(p.field_70165_t, p.field_70161_v, tick);
+         this.trail(p.getUniqueID()).push(p.posX, p.posZ, tick);
          out.add(p);
       }
       return out;
@@ -702,8 +702,8 @@ public class KillauraCheck {
    private float minInsideError(EntityPlayer attacker, Trail trail, float yaw) {
       float best = Float.MAX_VALUE;
       for (int i = 0; i < trail.size; ++i) {
-         double dx = trail.x[i] - attacker.field_70165_t;
-         double dz = trail.z[i] - attacker.field_70161_v;
+         double dx = trail.x[i] - attacker.posX;
+         double dz = trail.z[i] - attacker.posZ;
          double horizDist = Math.sqrt(dx * dx + dz * dz);
          if (horizDist < 0.5D) { // overlapping — bearing is meaningless
             continue;
@@ -718,8 +718,8 @@ public class KillauraCheck {
 
    /** Yaw bearing from the attacker to a world position (vanilla faceEntity formula). */
    private static float bearingTo(EntityPlayer attacker, double x, double z) {
-      double dx = x - attacker.field_70165_t;
-      double dz = z - attacker.field_70161_v;
+      double dx = x - attacker.posX;
+      double dz = z - attacker.posZ;
       return (float)(Math.atan2(dz, dx) * 180.0D / Math.PI) - 90.0F;
    }
 
@@ -731,7 +731,7 @@ public class KillauraCheck {
    private void debug(EntityPlayer player, String message) {
       if (cfg.v.debugMessages) {
          Rain.addMessage(EnumChatFormatting.YELLOW + "[AntiCheat]: " + EnumChatFormatting.WHITE
-            + player.func_70005_c_() + " " + message);
+            + player.getName() + " " + message);
       }
    }
 

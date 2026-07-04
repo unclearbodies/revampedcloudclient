@@ -11,7 +11,7 @@ public class HitDistanceMod extends Mod {
     private static double distance = 0.0;
 
     public HitDistanceMod() {
-        super("Hit Distance", "Displays the distance of your last hit.", Type.HUD);
+        super("Hit Distance", "Displays the distance of your last hit.", Type.Hud);
     }
 
     @SubscribeEvent

@@ -21,16 +21,16 @@ public class AutoBlockCheck {
          return;
       }
       if (!PlayerEligibility.shouldCheckPlayer(player)) {
-         this.forgetPlayer(player == null ? null : player.func_110124_au());
+         this.forgetPlayer(player == null ? null : player.getUniqueID());
          return;
       }
 
-      UUID uuid = player.func_110124_au();
-      if (player.field_82175_bq && player.func_70632_aY()) {
+      UUID uuid = player.getUniqueID();
+      if (player.isSwingInProgress && player.isBlocking()) {
          int ticks = this.autoBlockTicks.getOrDefault(uuid, 0) + 1;
          this.autoBlockTicks.put(uuid, ticks);
          if (cfg.v.debugMessages && ticks > 5) {
-            Rain.addMessage(EnumChatFormatting.YELLOW + "[AntiCheat]: " + EnumChatFormatting.WHITE + player.func_70005_c_() + " AutoBlock ticks: " + ticks);
+            Rain.addMessage(EnumChatFormatting.YELLOW + "[AntiCheat]: " + EnumChatFormatting.WHITE + player.getName() + " AutoBlock ticks: " + ticks);
          }
 
          if (ticks > FAIL_TICKS) {

@@ -95,6 +95,6 @@ public class SneakHud extends HudMod {
     }
 
     private boolean isSneaking() {
-        return ToggleSneakMod.isSneaking();
+        return ToggleSneakMod.isSneakingStatic();
     }
 }

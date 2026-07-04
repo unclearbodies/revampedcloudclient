@@ -13,7 +13,7 @@ public abstract class InventoryPlayerMixin {
 
     @Inject(method = "changeCurrentItem", at = @At("HEAD"), cancellable = true)
     public void changeCurrentItem(int direction, CallbackInfo ci) {
-        if(ZoomMod.isZoom()) {
+        if(ZoomMod.getInstance() != null && ZoomMod.getInstance().isZoom()) {
             ci.cancel();
         }
     }

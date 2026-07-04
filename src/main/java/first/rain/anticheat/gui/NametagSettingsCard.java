@@ -51,7 +51,7 @@ public class NametagSettingsCard {
       RenderUtil.drawRoundedOutline(this.x, this.y, this.width, this.height, 5.0F, 1.0F,
          RenderUtil.applyAlpha(enabled ? 0xC8FFFFFF : 0x32FFFFFF, alphaMult));
 
-      fontRenderer.func_175063_a("Marked Icon", (float)(this.x + PAD), (float)(this.y + PAD), RenderUtil.applyAlpha(0xFFFFFFFF, alphaMult));
+      fontRenderer.drawStringWithShadow("Marked Icon", (float)(this.x + PAD), (float)(this.y + PAD), RenderUtil.applyAlpha(0xFFFFFFFF, alphaMult));
       RenderUtil.drawTogglePill(this.toggleX(), this.y + PAD, TOGGLE_WIDTH, TOGGLE_HEIGHT, this.knobAnim, alphaMult);
 
       int previewX = this.x + PAD;
@@ -59,16 +59,16 @@ public class NametagSettingsCard {
       RenderUtil.drawRoundedRect(previewX, previewY, this.width - PAD * 2, 16.0F, 4.0F, RenderUtil.applyAlpha(0xFF202020, alphaMult));
       String previewName = "FlaggedPlayer";
       int previewNameX = previewX + 10;
-      fontRenderer.func_78276_b(previewName, previewNameX, previewY + 4, RenderUtil.applyAlpha(0xFFE8E8E8, alphaMult));
+      fontRenderer.drawString(previewName, previewNameX, previewY + 4, RenderUtil.applyAlpha(0xFFE8E8E8, alphaMult));
       int color = RenderUtil.applyAlpha(0xFF000000 | cfg.v.nametagColor & 0xFFFFFF,
          alphaMult * (float)Math.max(0, Math.min(100, cfg.v.nametagOpacity)) / 100.0F);
-      float markerX = previewNameX + fontRenderer.func_78256_a(previewName) + 9.0F;
+      float markerX = previewNameX + fontRenderer.getStringWidth(previewName) + 9.0F;
       float markerY = previewY + 8.0F;
       RenderUtil.drawTriangle(markerX, markerY, 6.0F, 6.5F, color);
       RenderUtil.drawTriangleOutline(markerX, markerY, 6.0F, 6.5F, 1.0F,
          RenderUtil.applyAlpha(0xFFFFFFFF, alphaMult * 0.55F));
 
-      fontRenderer.func_78276_b("Color", this.x + PAD, this.y + 54, RenderUtil.applyAlpha(0xFF8C8C8C, alphaMult));
+      fontRenderer.drawString("Color", this.x + PAD, this.y + 54, RenderUtil.applyAlpha(0xFF8C8C8C, alphaMult));
       for (int i = 0; i < SWATCHES.length; ++i) {
          int sx = this.swatchX(i);
          int sy = this.swatchY();
@@ -79,9 +79,9 @@ public class NametagSettingsCard {
       }
 
       int opacity = Math.max(0, Math.min(100, cfg.v.nametagOpacity));
-      fontRenderer.func_78276_b("Opacity", this.x + PAD, this.y + 74, RenderUtil.applyAlpha(0xFF8C8C8C, alphaMult));
+      fontRenderer.drawString("Opacity", this.x + PAD, this.y + 74, RenderUtil.applyAlpha(0xFF8C8C8C, alphaMult));
       String pct = opacity + "%";
-      fontRenderer.func_78276_b(pct, this.x + this.width - PAD - fontRenderer.func_78256_a(pct), this.y + 74,
+      fontRenderer.drawString(pct, this.x + this.width - PAD - fontRenderer.getStringWidth(pct), this.y + 74,
          RenderUtil.applyAlpha(0xFFFFFFFF, alphaMult));
       int trackX = this.trackX();
       int trackY = this.trackY();
@@ -135,8 +135,8 @@ public class NametagSettingsCard {
    }
 
    private void playClick() {
-      Minecraft.func_71410_x().func_147118_V().func_147682_a(
-         PositionedSoundRecord.func_147674_a(new ResourceLocation("gui.button.press"), 1.0F));
+      Minecraft.getMinecraft().getSoundHandler().playSound(
+         PositionedSoundRecord.create(new ResourceLocation("gui.button.press"), 1.0F));
    }
 
    private int toggleX() {

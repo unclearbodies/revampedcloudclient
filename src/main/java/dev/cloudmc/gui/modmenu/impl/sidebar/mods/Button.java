@@ -83,6 +83,11 @@ public class Button {
                         settingsList.add(settingKeybinding);
                         addY += settingKeybinding.getH();
                         break;
+                    case "ActionButton":
+                        ActionButton actionButton = new ActionButton(setting, this, addY);
+                        settingsList.add(actionButton);
+                        addY += actionButton.getH();
+                        break;
                 }
             }
         }
@@ -130,7 +135,6 @@ public class Button {
                             panel.getX() + 13 + animButton.getValueI() + x + 77,
                     panel.getY() + panel.getH() + y + h + 14, 15, 15, 2, Style.getColor(70).getRGB(), roundedCorners ? 0 : -1);
 
-            Helper2D.drawPicture(panel.getX() + getX() + getW() / 2 - 12, panel.getY() + panel.getH() + getY() + 45, 35, 35, color, "icon/button/button/" + mod.getName().toLowerCase() + ".png");
         }
 
         if (open) {

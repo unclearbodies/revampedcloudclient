@@ -83,6 +83,7 @@ public class Cloud {
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
+                dev.cloudmc.helpers.DiscordHelper.stop();
                 ConfigSaver.saveConfig();
             } catch (Exception e) {
                 LOGGER.error("Failed to save config on shutdown", e);

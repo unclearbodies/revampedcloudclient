@@ -38,7 +38,9 @@ public class ConfigLoader {
                     }
                     if (mod == null) continue;
 
-                    mod.setToggled(modConfig.isToggled());
+                    if (mod.isToggled() != modConfig.isToggled()) {
+                        mod.setToggled(modConfig.isToggled());
+                    }
                     
                     if (modConfig.getSettings() != null) {
                         for (Setting configSetting : modConfig.getSettings()) {

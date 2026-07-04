@@ -29,13 +29,13 @@ public class LegitScaffoldCheck {
          return;
       }
       if (!PlayerEligibility.shouldCheckPlayer(player)) {
-         this.forgetPlayer(player == null ? null : player.func_110124_au());
+         this.forgetPlayer(player == null ? null : player.getUniqueID());
          return;
       }
 
-      UUID uuid = player.func_110124_au();
-      long tick = (long)player.field_70173_aa;
-      boolean currSneak = player.func_70093_af();
+      UUID uuid = player.getUniqueID();
+      long tick = (long)player.ticksExisted;
+      boolean currSneak = player.isSneaking();
       boolean prevSneak = wasSneaking.getOrDefault(uuid, false);
       if (currSneak && !prevSneak) {
          lastCrouchStart.put(uuid, tick);
@@ -51,11 +51,11 @@ public class LegitScaffoldCheck {
       }
 
       wasSneaking.put(uuid, currSneak);
-      if (player.field_82175_bq && player.field_70732_aI != player.field_70733_aJ) {
+      if (player.isSwingInProgress && player.hurtTime != player.maxHurtTime) {
          lastSwingTick.put(uuid, tick);
       }
 
-      if (player.field_70125_A >= 60.0F && player.func_70694_bm() != null && player.func_70694_bm().func_77973_b() instanceof ItemBlock && player.field_70122_E) {
+      if (player.rotationPitch >= 60.0F && player.getHeldItem() != null && player.getHeldItem().getItem() instanceof ItemBlock && player.onGround) {
          long end = lastCrouchEnd.getOrDefault(uuid, 0L);
          long swing = lastSwingTick.getOrDefault(uuid, Long.MIN_VALUE);
          int crouchDuration = (int)(end - lastCrouchStart.getOrDefault(uuid, end - 1L));

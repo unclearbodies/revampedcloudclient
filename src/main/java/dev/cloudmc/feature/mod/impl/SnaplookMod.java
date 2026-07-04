@@ -17,6 +17,8 @@ import org.lwjgl.input.Keyboard;
 public class SnaplookMod extends Mod {
     private boolean cameraToggled = false;
 
+    private Setting keybindingSetting;
+
     public SnaplookMod() {
         super(
                 "Snaplook",
@@ -24,12 +26,21 @@ public class SnaplookMod extends Mod {
                 Type.Mechanic
         );
 
-        Cloud.INSTANCE.settingManager.addSetting(new Setting("Keybinding", this, Keyboard.KEY_F));
+        keybindingSetting = new Setting("Keybinding", this, Keyboard.KEY_F);
+        Cloud.INSTANCE.settingManager.addSetting(keybindingSetting);
+    }
+
+    @Override
+    public void onDisable() {
+        if (cameraToggled) {
+            cameraToggled = false;
+            Cloud.INSTANCE.mc.gameSettings.thirdPersonView = 0;
+        }
     }
 
     @SubscribeEvent
     public void onKey(InputEvent.KeyInputEvent e) {
-        if(Keyboard.isKeyDown(getKey()) && !cameraToggled){
+        if(Keyboard.isKeyDown(keybindingSetting.getKey()) && !cameraToggled){
             cameraToggled = true;
             Cloud.INSTANCE.mc.gameSettings.thirdPersonView = 1;
         }
@@ -37,13 +48,9 @@ public class SnaplookMod extends Mod {
 
     @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent e){
-        if(!Keyboard.isKeyDown(getKey()) && cameraToggled){
+        if(!Keyboard.isKeyDown(keybindingSetting.getKey()) && cameraToggled){
             cameraToggled = false;
             Cloud.INSTANCE.mc.gameSettings.thirdPersonView = 0;
         }
-    }
-
-    private int getKey(){
-        return Cloud.INSTANCE.settingManager.getSettingByModAndName(getName(), "Keybinding").getKey();
     }
 }

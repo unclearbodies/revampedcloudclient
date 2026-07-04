@@ -67,20 +67,22 @@ public abstract class EntityRendererMixin {
 
     @Inject(method = "hurtCameraEffect", at = @At("HEAD"), cancellable = true)
     private void hurtCameraEffect(float partialTicks, CallbackInfo ci) {
-        if (Cloud.INSTANCE.modManager.getMod("NoHurtCam").isToggled())
+        if (Cloud.INSTANCE.modManager.isModToggled("NoHurtCam"))
             ci.cancel();
     }
 
     @Redirect(method = "getFOVModifier", at = @At(value = "FIELD", target = "Lnet/minecraft/client/settings/GameSettings;fovSetting:F"))
     public float modifyFOV(GameSettings gameSettings) {
-        if (Cloud.INSTANCE.modManager.getMod("Zoom").isToggled()) {
-            return ZoomMod.getFOV();
+        if (Cloud.INSTANCE.modManager.isModToggled("Zoom")) {
+            return ZoomMod.getInstance() != null ? ZoomMod.getInstance().getFOV() : gameSettings.fovSetting;
         }
         return gameSettings.fovSetting;
     }
 
     @Redirect(method = "setupCameraTransform", at = @At(value = "FIELD", target = "Lnet/minecraft/client/settings/GameSettings;viewBobbing:Z", ordinal = 0))
     public boolean setupCameraTransform(GameSettings instance) {
-        return !Cloud.INSTANCE.optionManager.getOptionByName("Minimal View Bobbing").isCheckToggled() && Cloud.INSTANCE.mc.gameSettings.viewBobbing;
+        dev.cloudmc.feature.option.Option minimalBobbing = null;
+        try { minimalBobbing = Cloud.INSTANCE.optionManager.getOptionByName("Minimal View Bobbing"); } catch (Exception e) {}
+        return (minimalBobbing == null || !minimalBobbing.isCheckToggled()) && Cloud.INSTANCE.mc.gameSettings.viewBobbing;
     }
 }

@@ -87,7 +87,7 @@ public abstract class ModelBipedMixin extends ModelBase {
             case 3:
                 this.bipedRightArm.rotateAngleX = this.bipedRightArm.rotateAngleX * 0.5F - ((float)Math.PI / 10F) * (float)this.heldItemRight;
                 this.bipedRightArm.rotateAngleY = -0.5235988F;
-                if (Cloud.INSTANCE.modManager.getMod("Animation").isToggled() && Cloud.INSTANCE.settingManager.getSettingByModAndName("Animation", "Block Animation").isCheckToggled()) {
+                if (dev.cloudmc.feature.mod.impl.AnimationMod.isBlockAnimationEnabled()) {
                     this.bipedRightArm.rotateAngleY = 0.0F;
                 }
         }

@@ -20,7 +20,13 @@ import java.awt.*;
 
 public class ToggleSneakMod extends Mod {
 
-    private static boolean toggled = false;
+    private boolean toggled = false;
+    private boolean wasDown = false;
+
+    private Setting keybindingSetting;
+    private Setting modeSetting;
+    private Setting backgroundSetting;
+    private Setting fontColorSetting;
 
     public ToggleSneakMod() {
         super(
@@ -28,21 +34,34 @@ public class ToggleSneakMod extends Mod {
                 "Allows you to toggle the Sneak button instead of holding it.",
                 Type.Mechanic
         );
-        Cloud.INSTANCE.settingManager.addSetting(new Setting("Keybinding", this, Keyboard.KEY_LSHIFT));
 
-        String[] mode = {"Modern", "Legacy"};
-        Cloud.INSTANCE.settingManager.addSetting(new Setting("Mode", this, "Modern", 0, mode));
-        Cloud.INSTANCE.settingManager.addSetting(new Setting("Background", this, true));
-        Cloud.INSTANCE.settingManager.addSetting(new Setting("Font Color", this, new Color(255, 255, 255), new Color(255, 0, 0), 0, new float[]{0, 0}));
+        keybindingSetting = new Setting("Keybinding", this, Keyboard.KEY_LSHIFT);
+        modeSetting = new Setting("Mode", this, "Modern", 0, new String[]{"Modern", "Legacy"});
+        backgroundSetting = new Setting("Background", this, true);
+        fontColorSetting = new Setting("Font Color", this, new Color(255, 255, 255), new Color(255, 0, 0), 0, new float[]{0, 0});
+
+        Cloud.INSTANCE.settingManager.addSetting(keybindingSetting);
+        Cloud.INSTANCE.settingManager.addSetting(modeSetting);
+        Cloud.INSTANCE.settingManager.addSetting(backgroundSetting);
+        Cloud.INSTANCE.settingManager.addSetting(fontColorSetting);
     }
 
-    public static boolean isSneaking() {
+    public boolean isSneaking() {
         return toggled;
+    }
+
+    // Keep the static accessor for backward compatibility (SneakHud calls this)
+    public static boolean isSneakingStatic() {
+        try {
+            ToggleSneakMod mod = (ToggleSneakMod) Cloud.INSTANCE.modManager.getMod("ToggleSneak");
+            return mod != null && mod.isSneaking();
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     @Override
     public void onDisable(){
-        super.onDisable();
         KeyBinding.setKeyBindState(Cloud.INSTANCE.mc.gameSettings.keyBindSneak.getKeyCode(), false);
     }
 
@@ -58,18 +77,12 @@ public class ToggleSneakMod extends Mod {
         }
     }
 
-    private boolean wasDown = false;
-
     @SubscribeEvent
     public void key(InputEvent.KeyInputEvent e) {
-        boolean isDown = Keyboard.isKeyDown(getKey());
+        boolean isDown = Keyboard.isKeyDown(keybindingSetting.getKey());
         if (isDown && !wasDown) {
             toggled = !toggled;
         }
         wasDown = isDown;
-    }
-
-    private int getKey(){
-        return Cloud.INSTANCE.settingManager.getSettingByModAndName(getName(), "Keybinding").getKey();
     }
 }

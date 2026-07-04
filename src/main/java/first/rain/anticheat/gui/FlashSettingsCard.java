@@ -59,21 +59,21 @@ public class FlashSettingsCard {
          RenderUtil.applyAlpha(enabled ? 0xC8FFFFFF : 0x32FFFFFF, alphaMult));
 
       // header row: name, Test button, toggle
-      fontRenderer.func_175063_a("Screen Flash", (float)(this.x + PAD), (float)(this.y + PAD), RenderUtil.applyAlpha(0xFFFFFFFF, alphaMult));
+      fontRenderer.drawStringWithShadow("Screen Flash", (float)(this.x + PAD), (float)(this.y + PAD), RenderUtil.applyAlpha(0xFFFFFFFF, alphaMult));
       boolean testHovered = this.isOverTest(mouseX, mouseY);
       RenderUtil.drawRoundedOutline(this.testX(), this.y + PAD - 1, 30.0F, 13.0F, 6.0F, 1.0F,
          RenderUtil.applyAlpha(testHovered ? 0xC8FFFFFF : 0x50FFFFFF, alphaMult));
-      fontRenderer.func_78276_b("Test", this.testX() + (30 - fontRenderer.func_78256_a("Test")) / 2, this.y + PAD + 2,
+      fontRenderer.drawString("Test", this.testX() + (30 - fontRenderer.getStringWidth("Test")) / 2, this.y + PAD + 2,
          RenderUtil.applyAlpha(testHovered ? 0xFFFFFFFF : 0xFF9A9A9A, alphaMult));
       RenderUtil.drawTogglePill(this.toggleX(), this.y + PAD, TOGGLE_WIDTH, TOGGLE_HEIGHT, this.knobAnim, alphaMult);
 
-      List<String> lines = fontRenderer.func_78271_c("Floods the screen + plays a sound whenever an alert fires.", this.width - PAD * 2);
+      List<String> lines = fontRenderer.listFormattedStringToWidth("Floods the screen + plays a sound whenever an alert fires.", this.width - PAD * 2);
       for (int i = 0; i < lines.size() && i < 2; ++i) {
-         fontRenderer.func_78276_b(lines.get(i), this.x + PAD, this.y + 24 + i * 10, RenderUtil.applyAlpha(0xFF8C8C8C, alphaMult));
+         fontRenderer.drawString(lines.get(i), this.x + PAD, this.y + 24 + i * 10, RenderUtil.applyAlpha(0xFF8C8C8C, alphaMult));
       }
 
       // color swatch row
-      fontRenderer.func_78276_b("Color", this.x + PAD, this.y + 50, RenderUtil.applyAlpha(0xFF8C8C8C, alphaMult));
+      fontRenderer.drawString("Color", this.x + PAD, this.y + 50, RenderUtil.applyAlpha(0xFF8C8C8C, alphaMult));
       for (int i = 0; i < SWATCHES.length; ++i) {
          int sx = this.swatchX(i);
          int sy = this.swatchY();
@@ -85,9 +85,9 @@ public class FlashSettingsCard {
 
       // opacity slider
       int opacity = Math.max(0, Math.min(100, cfg.v.flashOpacity));
-      fontRenderer.func_78276_b("Opacity", this.x + PAD, this.y + 70, RenderUtil.applyAlpha(0xFF8C8C8C, alphaMult));
+      fontRenderer.drawString("Opacity", this.x + PAD, this.y + 70, RenderUtil.applyAlpha(0xFF8C8C8C, alphaMult));
       String pct = opacity + "%";
-      fontRenderer.func_78276_b(pct, this.x + this.width - PAD - fontRenderer.func_78256_a(pct), this.y + 70,
+      fontRenderer.drawString(pct, this.x + this.width - PAD - fontRenderer.getStringWidth(pct), this.y + 70,
          RenderUtil.applyAlpha(0xFFFFFFFF, alphaMult));
       int trackX = this.trackX();
       int trackY = this.trackY();
@@ -145,8 +145,8 @@ public class FlashSettingsCard {
    }
 
    private void playClick() {
-      Minecraft.func_71410_x().func_147118_V().func_147682_a(
-         PositionedSoundRecord.func_147674_a(new ResourceLocation("gui.button.press"), 1.0F));
+      Minecraft.getMinecraft().getSoundHandler().playSound(
+         PositionedSoundRecord.create(new ResourceLocation("gui.button.press"), 1.0F));
    }
 
    private int toggleX() {

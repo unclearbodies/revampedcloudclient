@@ -12,7 +12,7 @@ public class TPSMod extends Mod {
     private static float currentTps = 20.0f;
 
     public TPSMod() {
-        super("TPS", "Displays the server's TPS (Ticks Per Second).", Type.HUD);
+        super("TPS", "Displays the server's TPS (Ticks Per Second).", Type.Hud);
     }
 
     public static void onTimeUpdate() {

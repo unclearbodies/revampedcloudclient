@@ -8,6 +8,7 @@ package dev.cloudmc.helpers;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,11 @@ public class CpsHelper {
         removeOldClicks(time);
     }
 
+    @SubscribeEvent
+    public void onTick(TickEvent.ClientTickEvent event) {
+        removeOldClicks(System.currentTimeMillis());
+    }
+
     public int getCPS(int mouseButton) {
         return mouseButton == 0 ? leftClicks.size() : rightClicks.size();
     }
@@ -37,5 +43,17 @@ public class CpsHelper {
     public void removeOldClicks(long currentTime) {
         leftClicks.removeIf(e -> e + 1000 < currentTime);
         rightClicks.removeIf(e -> e + 1000 < currentTime);
+    }
+
+    public void addLeftClick() {
+        long time = System.currentTimeMillis();
+        leftClicks.add(time);
+        removeOldClicks(time);
+    }
+
+    public void addRightClick() {
+        long time = System.currentTimeMillis();
+        rightClicks.add(time);
+        removeOldClicks(time);
     }
 }

@@ -14,7 +14,7 @@ import org.lwjgl.input.Keyboard;
  * Call ClickGuiKeybind.register() once from your mod's init.
  */
 public final class ClickGuiKeybind {
-   public static final KeyBinding OPEN_GUI = new KeyBinding("Open AntiCheat GUI", Keyboard.KEY_RSHIFT, "Rain");
+   public static final KeyBinding OPEN_GUI = new KeyBinding("Open AntiCheat GUI", Keyboard.KEY_ADD, "Rain");
 
    public static void register() {
       ClientRegistry.registerKeyBinding(OPEN_GUI);
@@ -23,10 +23,10 @@ public final class ClickGuiKeybind {
 
    @SubscribeEvent
    public void onKeyInput(InputEvent.KeyInputEvent event) {
-      if (OPEN_GUI.func_151468_f()) { // isPressed — consumes the press
-         Minecraft mc = Minecraft.func_71410_x();
-         if (mc.field_71462_r == null) { // no screen already open
-            mc.func_147108_a(new ClickGui()); // displayGuiScreen
+      if (OPEN_GUI.isPressed()) { // isPressed — consumes the press
+         Minecraft mc = Minecraft.getMinecraft();
+         if (mc.currentScreen == null) { // no screen already open
+            mc.displayGuiScreen(new ClickGui()); // displayGuiScreen
          }
       }
    }

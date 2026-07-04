@@ -12,6 +12,16 @@ public class Style {
     private static boolean darkMode = false;
     private static boolean snapping = true;
 
+    private static final Color[] blackColors = new Color[256];
+    private static final Color[] whiteColors = new Color[256];
+
+    static {
+        for (int i = 0; i < 256; i++) {
+            blackColors[i] = new Color(0, 0, 0, i);
+            whiteColors[i] = new Color(255, 255, 255, i);
+        }
+    }
+
     /**
      * Returns a color with the given transparency depending on if dark mode is active
      *
@@ -20,9 +30,8 @@ public class Style {
      */
 
     public static Color getColor(int transparency) {
-        return isDarkMode() ?
-                new Color(0, 0, 0, transparency) :
-                new Color(255, 255, 255, transparency);
+        int t = Math.max(0, Math.min(255, transparency));
+        return isDarkMode() ? blackColors[t] : whiteColors[t];
     }
 
     /**
@@ -33,9 +42,8 @@ public class Style {
      */
 
     public static Color getReverseColor(int transparency) {
-        return Style.isDarkMode() ?
-                new Color(255, 255, 255, transparency) :
-                new Color(0, 0, 0, transparency);
+        int t = Math.max(0, Math.min(255, transparency));
+        return Style.isDarkMode() ? whiteColors[t] : blackColors[t];
     }
 
     /**

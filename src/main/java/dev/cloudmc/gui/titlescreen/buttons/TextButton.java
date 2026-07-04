@@ -43,8 +43,9 @@ public class TextButton {
 
         animate.update().setReversed(!isHovered(mouseX, mouseY));
 
+        int alpha = animate.getValueI() + 30;
         Helper2D.drawRoundedRectangle(x, y, w, h, 2,
-                new Color(255, 255, 255, animate.getValueI() + 30).getRGB(),
+                (alpha << 24) | 0xFFFFFF,
                 Cloud.INSTANCE.optionManager.getOptionByName("Rounded Corners").isCheckToggled() ? 0 : -1
         );
 

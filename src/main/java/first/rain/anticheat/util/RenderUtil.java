@@ -1,6 +1,9 @@
 package first.rain.anticheat.util;
 
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -24,11 +27,13 @@ public final class RenderUtil {
    public static void drawRoundedRect(float x, float y, float width, float height, float radius, int color) {
       float r = clampRadius(radius, width, height);
       setupShapeState(color);
-      GL11.glBegin(GL11.GL_TRIANGLE_FAN);
-      GL11.glVertex2d(x + width / 2.0F, y + height / 2.0F);
-      emitRoundedPerimeter(x, y, width, height, r);
-      GL11.glVertex2d(x, y + r); // repeat the first perimeter vertex to close the fan
-      GL11.glEnd();
+      Tessellator tessellator = Tessellator.getInstance();
+      WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+      worldrenderer.begin(GL11.GL_TRIANGLE_FAN, DefaultVertexFormats.POSITION);
+      worldrenderer.pos(x + width / 2.0F, y + height / 2.0F, 0).endVertex();
+      emitRoundedPerimeter(worldrenderer, x, y, width, height, r);
+      worldrenderer.pos(x, y + r, 0).endVertex(); // repeat the first perimeter vertex to close the fan
+      tessellator.draw();
       restoreShapeState();
    }
 
@@ -41,9 +46,11 @@ public final class RenderUtil {
       GL11.glEnable(GL11.GL_LINE_SMOOTH);
       GL11.glHint(GL11.GL_LINE_SMOOTH_HINT, GL11.GL_NICEST);
       GL11.glLineWidth(lineWidth);
-      GL11.glBegin(GL11.GL_LINE_LOOP);
-      emitRoundedPerimeter(x, y, width, height, r);
-      GL11.glEnd();
+      Tessellator tessellator = Tessellator.getInstance();
+      WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+      worldrenderer.begin(GL11.GL_LINE_LOOP, DefaultVertexFormats.POSITION);
+      emitRoundedPerimeter(worldrenderer, x, y, width, height, r);
+      tessellator.draw();
       GL11.glLineWidth(1.0F);
       GL11.glDisable(GL11.GL_LINE_SMOOTH);
       restoreShapeState();
@@ -54,14 +61,16 @@ public final class RenderUtil {
     */
    public static void drawCircle(float centerX, float centerY, float radius, int color) {
       setupShapeState(color);
-      GL11.glBegin(GL11.GL_TRIANGLE_FAN);
-      GL11.glVertex2d(centerX, centerY);
+      Tessellator tessellator = Tessellator.getInstance();
+      WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+      worldrenderer.begin(GL11.GL_TRIANGLE_FAN, DefaultVertexFormats.POSITION);
+      worldrenderer.pos(centerX, centerY, 0).endVertex();
       int segments = CORNER_SEGMENTS * 4;
       for (int i = 0; i <= segments; ++i) {
          double angle = Math.PI * 2.0D * i / segments;
-         GL11.glVertex2d(centerX + Math.cos(angle) * radius, centerY + Math.sin(angle) * radius);
+         worldrenderer.pos(centerX + net.minecraft.util.MathHelper.cos((float) angle) * radius, centerY + net.minecraft.util.MathHelper.sin((float) angle) * radius, 0).endVertex();
       }
-      GL11.glEnd();
+      tessellator.draw();
       restoreShapeState();
    }
 
@@ -72,11 +81,13 @@ public final class RenderUtil {
       float halfWidth = width / 2.0F;
       float halfHeight = height / 2.0F;
       setupShapeState(color);
-      GL11.glBegin(GL11.GL_TRIANGLES);
-      GL11.glVertex2d(centerX, centerY - halfHeight);
-      GL11.glVertex2d(centerX - halfWidth, centerY + halfHeight);
-      GL11.glVertex2d(centerX + halfWidth, centerY + halfHeight);
-      GL11.glEnd();
+      Tessellator tessellator = Tessellator.getInstance();
+      WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+      worldrenderer.begin(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION);
+      worldrenderer.pos(centerX, centerY - halfHeight, 0).endVertex();
+      worldrenderer.pos(centerX - halfWidth, centerY + halfHeight, 0).endVertex();
+      worldrenderer.pos(centerX + halfWidth, centerY + halfHeight, 0).endVertex();
+      tessellator.draw();
       restoreShapeState();
    }
 
@@ -90,11 +101,13 @@ public final class RenderUtil {
       GL11.glEnable(GL11.GL_LINE_SMOOTH);
       GL11.glHint(GL11.GL_LINE_SMOOTH_HINT, GL11.GL_NICEST);
       GL11.glLineWidth(lineWidth);
-      GL11.glBegin(GL11.GL_LINE_LOOP);
-      GL11.glVertex2d(centerX, centerY - halfHeight);
-      GL11.glVertex2d(centerX - halfWidth, centerY + halfHeight);
-      GL11.glVertex2d(centerX + halfWidth, centerY + halfHeight);
-      GL11.glEnd();
+      Tessellator tessellator = Tessellator.getInstance();
+      WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+      worldrenderer.begin(GL11.GL_LINE_LOOP, DefaultVertexFormats.POSITION);
+      worldrenderer.pos(centerX, centerY - halfHeight, 0).endVertex();
+      worldrenderer.pos(centerX - halfWidth, centerY + halfHeight, 0).endVertex();
+      worldrenderer.pos(centerX + halfWidth, centerY + halfHeight, 0).endVertex();
+      tessellator.draw();
       GL11.glLineWidth(1.0F);
       GL11.glDisable(GL11.GL_LINE_SMOOTH);
       restoreShapeState();
@@ -173,17 +186,17 @@ public final class RenderUtil {
     * corner. Screen space has +y pointing down, so angle 180 = left,
     * 270 = up, 0 = right, 90 = down.
     */
-   private static void emitRoundedPerimeter(float x, float y, float width, float height, float r) {
-      emitArc(x + r, y + r, r, 180.0F);                   // top-left
-      emitArc(x + width - r, y + r, r, 270.0F);           // top-right
-      emitArc(x + width - r, y + height - r, r, 0.0F);    // bottom-right
-      emitArc(x + r, y + height - r, r, 90.0F);           // bottom-left
+   private static void emitRoundedPerimeter(WorldRenderer worldrenderer, float x, float y, float width, float height, float r) {
+      emitArc(worldrenderer, x + r, y + r, r, 180.0F);                   // top-left
+      emitArc(worldrenderer, x + width - r, y + r, r, 270.0F);           // top-right
+      emitArc(worldrenderer, x + width - r, y + height - r, r, 0.0F);    // bottom-right
+      emitArc(worldrenderer, x + r, y + height - r, r, 90.0F);           // bottom-left
    }
 
-   private static void emitArc(float centerX, float centerY, float r, float startAngleDeg) {
+   private static void emitArc(WorldRenderer worldrenderer, float centerX, float centerY, float r, float startAngleDeg) {
       for (int i = 0; i <= CORNER_SEGMENTS; ++i) {
          double angle = Math.toRadians(startAngleDeg + 90.0D * i / CORNER_SEGMENTS);
-         GL11.glVertex2d(centerX + Math.cos(angle) * r, centerY + Math.sin(angle) * r);
+         worldrenderer.pos(centerX + net.minecraft.util.MathHelper.cos((float) angle) * r, centerY + net.minecraft.util.MathHelper.sin((float) angle) * r, 0).endVertex();
       }
    }
 
@@ -192,19 +205,19 @@ public final class RenderUtil {
       float red = (color >>> 16 & 0xFF) / 255.0F;
       float green = (color >>> 8 & 0xFF) / 255.0F;
       float blue = (color & 0xFF) / 255.0F;
-      GlStateManager.func_179147_l();                        // enableBlend
-      GlStateManager.func_179090_x();                        // disableTexture2D
-      GlStateManager.func_179118_c();                        // disableAlpha — the GUI alpha test would discard low-alpha fragments
-      GlStateManager.func_179129_p();                        // disableCull — fan winding must not matter
-      GlStateManager.func_179120_a(770, 771, 1, 0);          // tryBlendFuncSeparate(SRC_ALPHA, ONE_MINUS_SRC_ALPHA, ONE, ZERO)
-      GlStateManager.func_179131_c(red, green, blue, alpha); // color
+      GlStateManager.enableBlend();                        // enableBlend
+      GlStateManager.disableTexture2D();                        // disableTexture2D
+      GlStateManager.disableAlpha();                        // disableAlpha — the GUI alpha test would discard low-alpha fragments
+      GlStateManager.disableCull();                        // disableCull — fan winding must not matter
+      GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);          // tryBlendFuncSeparate(SRC_ALPHA, ONE_MINUS_SRC_ALPHA, ONE, ZERO)
+      GlStateManager.color(red, green, blue, alpha); // color
    }
 
    private static void restoreShapeState() {
-      GlStateManager.func_179089_o();                     // enableCull
-      GlStateManager.func_179141_d();                     // enableAlpha
-      GlStateManager.func_179098_w();                     // enableTexture2D
-      GlStateManager.func_179084_k();                     // disableBlend
-      GlStateManager.func_179131_c(1.0F, 1.0F, 1.0F, 1.0F); // reset color so following font/texture draws are untinted
+      GlStateManager.enableCull();                     // enableCull
+      GlStateManager.enableAlpha();                     // enableAlpha
+      GlStateManager.enableTexture2D();                     // enableTexture2D
+      GlStateManager.disableBlend();                     // disableBlend
+      GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F); // reset color so following font/texture draws are untinted
    }
 }

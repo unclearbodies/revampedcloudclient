@@ -219,6 +219,8 @@ public class GlyphPageFontRenderer {
         glyphPage.bindTexture();
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        
+        try {
 
         for (int i = 0; i < text.length(); ++i) {
             char c0 = text.charAt(i);
@@ -283,10 +285,10 @@ public class GlyphPageFontRenderer {
                 doDraw(f, glyphPage);
             }
         }
-
-        glyphPage.unbindTexture();
-
-        glPopMatrix();
+        } finally {
+            glyphPage.unbindTexture();
+            glPopMatrix();
+        }
     }
 
     private void doDraw(float f, GlyphPage glyphPage) {

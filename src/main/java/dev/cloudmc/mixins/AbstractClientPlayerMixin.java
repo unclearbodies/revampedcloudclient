@@ -1,6 +1,7 @@
 package dev.cloudmc.mixins;
 
 import dev.cloudmc.Cloud;
+import dev.cloudmc.feature.mod.impl.CapeMod;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.util.ResourceLocation;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,8 +14,8 @@ public class AbstractClientPlayerMixin {
 
     @Inject(method = "getLocationCape", at = @At("HEAD"), cancellable = true)
     private void getCape(CallbackInfoReturnable<ResourceLocation> cir) {
-        if (Cloud.INSTANCE.modManager.getMod("Cape") != null && Cloud.INSTANCE.modManager.getMod("Cape").isToggled()) {
-            cir.setReturnValue(new ResourceLocation("cloudmc/cape.png"));
+        if (Cloud.INSTANCE.modManager.isModToggled("Cape")) {
+            cir.setReturnValue(CapeMod.capeLocation);
         }
     }
 }

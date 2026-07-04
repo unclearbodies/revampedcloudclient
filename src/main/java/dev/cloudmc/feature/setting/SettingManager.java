@@ -8,13 +8,17 @@ package dev.cloudmc.feature.setting;
 import dev.cloudmc.feature.mod.Mod;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SettingManager {
 
     public ArrayList<Setting> settingList;
+    private Map<String, Map<String, Setting>> settingCache;
 
     public SettingManager() {
         settingList = new ArrayList<>();
+        settingCache = new HashMap<>();
     }
 
     /**
@@ -24,6 +28,8 @@ public class SettingManager {
 
     public void addSetting(Setting setting) {
         settingList.add(setting);
+        settingCache.computeIfAbsent(setting.getMod().getName().toLowerCase(), k -> new HashMap<>())
+                    .put(setting.getName().toLowerCase(), setting);
     }
 
     /**
@@ -41,30 +47,33 @@ public class SettingManager {
      */
 
     public ArrayList<Setting> getSettingsByMod(Mod mod) {
-        ArrayList<Setting> settingList = new ArrayList<>();
-        for (Setting setting : this.settingList) {
-            if (setting.getMod().equals(mod)) {
-                settingList.add(setting);
-            }
+        ArrayList<Setting> result = new ArrayList<>();
+        Map<String, Setting> modSettings = settingCache.get(mod.getName().toLowerCase());
+        if (modSettings != null) {
+            result.addAll(modSettings.values());
         }
-        return settingList;
+        return result;
     }
 
     /**
-     * Returns a setting with a given mod name and setting name
+     * Returns a setting with a given mod name and setting name.
+     * Throws IllegalArgumentException if the setting is not found,
+     * matching the behavior of ModManager.getMod() and OptionManager.getOptionByName().
      *
      * @param modName The mod name
      * @param setName The setting name
      * @return The setting
+     * @throws IllegalArgumentException if no setting matches the given mod and setting name
      */
 
     public Setting getSettingByModAndName(String modName, String setName) {
-        for (Setting setting : settingList) {
-            if (setting.getMod().getName().equalsIgnoreCase(modName) &&
-                    setting.getName().equalsIgnoreCase(setName)) {
+        Map<String, Setting> modSettings = settingCache.get(modName.toLowerCase());
+        if (modSettings != null) {
+            Setting setting = modSettings.get(setName.toLowerCase());
+            if (setting != null) {
                 return setting;
             }
         }
-        throw new IllegalArgumentException("Setting not found: " + modName + " -> " + setName);
+        throw new IllegalArgumentException("Setting not found: " + modName + " / " + setName);
     }
 }

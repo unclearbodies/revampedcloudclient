@@ -19,10 +19,10 @@ public class PlayerData {
    private int resetTick;
 
    public void update(EntityPlayer entityPlayer) {
-      int ticksExisted = entityPlayer.field_70173_aa;
-      this.posX = entityPlayer.field_70165_t - entityPlayer.field_70142_S;
-      this.posY = entityPlayer.field_70163_u - entityPlayer.field_70137_T;
-      this.posZ = entityPlayer.field_70161_v - entityPlayer.field_70136_U;
+      int ticksExisted = entityPlayer.ticksExisted;
+      this.posX = entityPlayer.posX - entityPlayer.lastTickPosX;
+      this.posY = entityPlayer.posY - entityPlayer.lastTickPosY;
+      this.posZ = entityPlayer.posZ - entityPlayer.lastTickPosZ;
       this.speed = Math.max(Math.abs(this.posX), Math.abs(this.posZ));
       if (ticksExisted - this.resetTick >= 20) {
          this.fastTick = 0;
@@ -40,25 +40,25 @@ public class PlayerData {
          this.aboveVoidTicks = ticksExisted;
       }
 
-      if (entityPlayer.func_70093_af()) {
+      if (entityPlayer.isSneaking()) {
          this.lastSneakTick = ticksExisted;
       }
 
-      if (entityPlayer.field_82175_bq && entityPlayer.func_70632_aY()) {
+      if (entityPlayer.isSwingInProgress && entityPlayer.isBlocking()) {
          ++this.autoBlockTicks;
       } else {
          this.autoBlockTicks = 0;
       }
 
-      if (entityPlayer.func_70051_ag() && entityPlayer.func_71039_bw()) {
+      if (entityPlayer.isSprinting() && entityPlayer.isUsingItem()) {
          ++this.noSlowTicks;
       } else {
          this.noSlowTicks = 0;
       }
 
-      if (entityPlayer.field_70125_A >= 70.0F && entityPlayer.func_70694_bm() != null && entityPlayer.func_70694_bm().func_77973_b() instanceof ItemBlock) {
-         if (entityPlayer.field_110158_av == 1) {
-            if (!this.sneaking && entityPlayer.func_70093_af()) {
+      if (entityPlayer.rotationPitch >= 70.0F && entityPlayer.getHeldItem() != null && entityPlayer.getHeldItem().getItem() instanceof ItemBlock) {
+         if (entityPlayer.swingProgressInt == 1) {
+            if (!this.sneaking && entityPlayer.isSneaking()) {
                ++this.sneakTicks;
             } else {
                this.sneakTicks = 0;

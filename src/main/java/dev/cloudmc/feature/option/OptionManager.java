@@ -33,7 +33,7 @@ public class OptionManager {
         addOption(new Option("Rounded Corners", true));
 
         addOption(new Option("Controls"));
-        addOption(new Option("ModMenu Keybinding", Keyboard.KEY_RSHIFT));
+        addOption(new Option("ModMenu Keybinding", Keyboard.KEY_ADD));
     }
 
     /**
@@ -67,6 +67,6 @@ public class OptionManager {
                 return option;
             }
         }
-        return null;
+        throw new IllegalArgumentException("Option not found: " + name);
     }
 }

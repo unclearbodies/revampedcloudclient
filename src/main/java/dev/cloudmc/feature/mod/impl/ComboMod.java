@@ -14,7 +14,7 @@ public class ComboMod extends Mod {
     private boolean wasHurt;
 
     public ComboMod() {
-        super("Combo Counter", "Displays your current hit combo.", Type.HUD);
+        super("Combo Counter", "Displays your current hit combo.", Type.Hud);
     }
 
     @SubscribeEvent
@@ -38,7 +38,7 @@ public class ComboMod extends Mod {
     @SubscribeEvent
     public void onAttack(AttackEntityEvent event) {
         Minecraft mc = Minecraft.getMinecraft();
-        if (event.entityPlayer == mc.thePlayer && event.target != null && !event.target.isEntityInvulnerable()) {
+        if (event.entityPlayer == mc.thePlayer && event.target != null && !event.target.isEntityInvulnerable(net.minecraft.util.DamageSource.generic)) {
             combo++;
             lastHitTime = System.currentTimeMillis();
         }

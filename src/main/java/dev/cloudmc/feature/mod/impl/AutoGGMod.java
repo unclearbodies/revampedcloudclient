@@ -21,7 +21,9 @@ public class AutoGGMod extends Mod {
             stripped.startsWith("Winning Team: ") ||
             stripped.matches("(?i)^(?>1st|2nd|3rd) Place:.*")) {
             
-            Minecraft.getMinecraft().thePlayer.sendChatMessage("gg");
+            if (Minecraft.getMinecraft().thePlayer != null) {
+                Minecraft.getMinecraft().thePlayer.sendChatMessage("gg");
+            }
         }
     }
 }

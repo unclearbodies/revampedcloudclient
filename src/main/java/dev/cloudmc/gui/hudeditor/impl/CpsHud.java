@@ -25,14 +25,15 @@ public class CpsHud extends HudMod {
     @Override
     public void renderMod(int mouseX, int mouseY) {
         GLHelper.startScale(getX(), getY(), getSize());
-        if (Cloud.INSTANCE.modManager.getMod(getName()).isToggled()) {
+        if (Cloud.INSTANCE.modManager.isModToggled(getName())) {
+            String text = isRightClick() ? "CPS: " + getLeftCPS() + " | " + getRightCPS() : "CPS: " + getLeftCPS();
             if (isModern()) {
                 if (isBackground()) {
                     Helper2D.drawRoundedRectangle(getX(), getY(), getW(), getH(), 2, Style.getColor(50).getRGB(), 0);
                 }
                 Cloud.INSTANCE.fontHelper.size20.drawString(
-                        isRightClick() ? "CPS: " + getLeftCPS() + " | " + getRightCPS() : "CPS: " + getLeftCPS(),
-                        getX() + getW() / 2f - Cloud.INSTANCE.fontHelper.size20.getStringWidth(isRightClick() ? "CPS: " + getLeftCPS() + " | " + getRightCPS() : "CPS: " + getLeftCPS()) / 2f,
+                        text,
+                        getX() + getW() / 2f - Cloud.INSTANCE.fontHelper.size20.getStringWidth(text) / 2f,
                         getY() + 6,
                         getColor()
                 );
@@ -41,8 +42,8 @@ public class CpsHud extends HudMod {
                     Helper2D.drawRectangle(getX(), getY(), getW(), getH(), Style.getColor(50).getRGB());
                 }
                 Cloud.INSTANCE.mc.fontRendererObj.drawString(
-                        isRightClick() ? "CPS: " + getLeftCPS() + " | " + getRightCPS() : "CPS: " + getLeftCPS(),
-                        getX() + getW() / 2 - Cloud.INSTANCE.mc.fontRendererObj.getStringWidth(isRightClick() ? "CPS: " + getLeftCPS() + " | " + getRightCPS() : "CPS: " + getLeftCPS()) / 2,
+                        text,
+                        getX() + getW() / 2 - Cloud.INSTANCE.mc.fontRendererObj.getStringWidth(text) / 2,
                         getY() + 6,
                         getColor()
                 );
@@ -55,14 +56,15 @@ public class CpsHud extends HudMod {
     @SubscribeEvent
     public void onRender2D(RenderGameOverlayEvent.Pre.Text e) {
         GLHelper.startScale(getX(), getY(), getSize());
-        if (Cloud.INSTANCE.modManager.getMod(getName()).isToggled() && !(Cloud.INSTANCE.mc.currentScreen instanceof HudEditor)) {
+        if (Cloud.INSTANCE.modManager.isModToggled(getName()) && !(Cloud.INSTANCE.mc.currentScreen instanceof HudEditor)) {
+            String text = isRightClick() ? "CPS: " + getLeftCPS() + " | " + getRightCPS() : "CPS: " + getLeftCPS();
             if (isModern()) {
                 if (isBackground()) {
                     Helper2D.drawRoundedRectangle(getX(), getY(), getW(), getH(), 2, 0x50000000, 0);
                 }
                 Cloud.INSTANCE.fontHelper.size20.drawString(
-                        isRightClick() ? "CPS: " + getLeftCPS() + " | " + getRightCPS() : "CPS: " + getLeftCPS(),
-                        getX() + getW() / 2f - Cloud.INSTANCE.fontHelper.size20.getStringWidth(isRightClick() ? "CPS: " + getLeftCPS() + " | " + getRightCPS() : "CPS: " + getLeftCPS()) / 2f,
+                        text,
+                        getX() + getW() / 2f - Cloud.INSTANCE.fontHelper.size20.getStringWidth(text) / 2f,
                         getY() + 6,
                         getColor()
                 );
@@ -71,8 +73,8 @@ public class CpsHud extends HudMod {
                     Helper2D.drawRectangle(getX(), getY(), getW(), getH(), 0x50000000);
                 }
                 Cloud.INSTANCE.mc.fontRendererObj.drawString(
-                        isRightClick() ? "CPS: " + getLeftCPS() + " | " + getRightCPS() : "CPS: " + getLeftCPS(),
-                        getX() + getW() / 2 - Cloud.INSTANCE.mc.fontRendererObj.getStringWidth(isRightClick() ? "CPS: " + getLeftCPS() + " | " + getRightCPS() : "CPS: " + getLeftCPS()) / 2,
+                        text,
+                        getX() + getW() / 2 - Cloud.INSTANCE.mc.fontRendererObj.getStringWidth(text) / 2,
                         getY() + 6,
                         getColor()
                 );

@@ -20,6 +20,9 @@ public class CrosshairMod extends Mod {
 
     public static final LayoutManager layoutManager = new LayoutManager();
 
+    private Setting colorSetting;
+    private Setting cellsSetting;
+
     public CrosshairMod() {
         super(
                 "Crosshair",
@@ -27,20 +30,27 @@ public class CrosshairMod extends Mod {
                 Type.Hud
         );
 
-        Cloud.INSTANCE.settingManager.addSetting(new Setting("Color", this, new Color(255, 255, 255), new Color(255, 0, 0), 0, new float[]{0, 0}));
-        Cloud.INSTANCE.settingManager.addSetting(new Setting("Cells", this, layoutManager.getLayout(0)));
+        colorSetting = new Setting("Color", this, new Color(255, 255, 255), new Color(255, 0, 0), 0, new float[]{0, 0});
+        cellsSetting = new Setting("Cells", this, layoutManager.getLayout(0));
+
+        Cloud.INSTANCE.settingManager.addSetting(colorSetting);
+        Cloud.INSTANCE.settingManager.addSetting(cellsSetting);
     }
 
     @SubscribeEvent
     public void onRender(RenderGameOverlayEvent.Post e) {
         if (e.type == RenderGameOverlayEvent.ElementType.TEXT) {
+            boolean[][] cells = cellsSetting.getCells();
+            int color = colorSetting.getColor().getRGB();
+            int centerX = ResolutionHelper.getWidth() / 2 - 5;
+            int centerY = ResolutionHelper.getHeight() / 2 - 5;
             for (int row = 0; row < 11; row++) {
                 for (int col = 0; col < 11; col++) {
-                    if (getCells()[row][col] && isToggled()) {
+                    if (cells[row][col] && isToggled()) {
                         Helper2D.drawRectangle(
-                                ResolutionHelper.getWidth() / 2 - 5 + col,
-                                ResolutionHelper.getHeight() / 2 - 5 + row,
-                                1, 1, color()
+                                centerX + col,
+                                centerY + row,
+                                1, 1, color
                         );
                     }
                 }
@@ -55,13 +65,5 @@ public class CrosshairMod extends Mod {
                 e.setCanceled(true);
             }
         }
-    }
-
-    private int color() {
-        return Cloud.INSTANCE.settingManager.getSettingByModAndName(getName(), "Color").getColor().getRGB();
-    }
-
-    private boolean[][] getCells() {
-        return Cloud.INSTANCE.settingManager.getSettingByModAndName(getName(), "Cells").getCells();
     }
 }

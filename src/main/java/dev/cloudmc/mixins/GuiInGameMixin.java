@@ -23,14 +23,14 @@ public abstract class GuiInGameMixin extends Gui {
 
     @Inject(method = "renderScoreboard", at = @At("HEAD"), cancellable = true)
     public void renderScoreboard(ScoreObjective objective, ScaledResolution scaledRes, CallbackInfo ci) {
-        if (Cloud.INSTANCE.modManager.getMod("Scoreboard").isToggled()) {
+        if (Cloud.INSTANCE.modManager.isModToggled("Scoreboard")) {
             ci.cancel();
         }
     }
 
     @Inject(method = "renderBossHealth", at = @At("HEAD"), cancellable = true)
     public void renderBossHealth(CallbackInfo ci) {
-        if (Cloud.INSTANCE.modManager.getMod("Bossbar").isToggled()) {
+        if (Cloud.INSTANCE.modManager.isModToggled("Bossbar")) {
             ci.cancel();
         }
     }

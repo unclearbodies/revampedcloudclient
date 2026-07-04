@@ -18,40 +18,40 @@ public final class PlayerEligibility {
 
    /** True for real players, including the local client player. */
    public static boolean isRealPlayer(EntityPlayer player) {
-      Minecraft mc = Minecraft.func_71410_x();
-      if (player == null || mc == null || mc.field_71441_e == null || player.field_70128_L) {
+      Minecraft mc = Minecraft.getMinecraft();
+      if (player == null || mc == null || mc.theWorld == null || player.isDead) {
          return false;
       }
-      if (player.func_110143_aJ() <= 0.0F || player.func_175149_v()) {
+      if (player.getHealth() <= 0.0F || player.isSpectator()) {
          return false;
       }
 
-      NetHandlerPlayClient netHandler = mc.func_147114_u();
+      NetHandlerPlayClient netHandler = mc.getNetHandler();
       if (netHandler == null) {
          return false;
       }
 
-      UUID uuid = player.func_110124_au();
+      UUID uuid = player.getUniqueID();
       if (uuid == null) {
          return false;
       }
 
-      NetworkPlayerInfo info = netHandler.func_175102_a(uuid);
-      if (info == null || info.func_178848_b() == GameType.SPECTATOR) {
+      NetworkPlayerInfo info = netHandler.getPlayerInfo(uuid);
+      if (info == null || info.getGameType() == GameType.SPECTATOR) {
          return false;
       }
 
-      String name = player.func_70005_c_();
-      if (name == null || name.length() == 0) {
+      String name = player.getName();
+      if (name == null || name.isEmpty() || name.length() > 16 || !name.matches("^[a-zA-Z0-9_]+$")) {
          return false;
       }
-      return netHandler.func_175104_a(name) == info;
+      return netHandler.getPlayerInfo(name) == info;
    }
 
    /** True for remote players that should be analyzed as suspects. */
    public static boolean shouldCheckPlayer(EntityPlayer player) {
-      Minecraft mc = Minecraft.func_71410_x();
-      return isRealPlayer(player) && mc != null && mc.field_71439_g != null && player != mc.field_71439_g;
+      Minecraft mc = Minecraft.getMinecraft();
+      return isRealPlayer(player) && mc != null && mc.thePlayer != null && player != mc.thePlayer;
    }
 
    /** True for real players that can be used as killaura geometry targets. */

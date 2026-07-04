@@ -55,24 +55,24 @@ public final class AlertManager {
    }
 
    public static void flag(EntityPlayer player, CheckType check, int vl) {
-      Minecraft mc = Minecraft.func_71410_x();
-      if (player == null || mc.field_71441_e == null) {
+      Minecraft mc = Minecraft.getMinecraft();
+      if (player == null || mc.theWorld == null) {
          return;
       }
       if (!PlayerEligibility.shouldCheckPlayer(player)) {
-         forgetPlayer(player.func_110124_au());
+         forgetPlayer(player.getUniqueID());
          return;
       }
 
-      UUID uuid = player.func_110124_au();
+      UUID uuid = player.getUniqueID();
       if (markedPlayers.containsKey(uuid)) {
          return;
       }
 
-      markedPlayers.put(uuid, new MarkedPlayer(uuid, player.func_70005_c_(), check, vl, mc.field_71441_e.func_82737_E()));
+      markedPlayers.put(uuid, new MarkedPlayer(uuid, player.getName(), check, vl, mc.theWorld.getTotalWorldTime()));
       Rain.addMessage(
          EnumChatFormatting.DARK_GRAY + "[" + EnumChatFormatting.WHITE + "AntiCheat" + EnumChatFormatting.DARK_GRAY + "] "
-            + EnumChatFormatting.WHITE + player.func_70005_c_()
+            + EnumChatFormatting.WHITE + player.getName()
             + EnumChatFormatting.GRAY + " flagged "
             + EnumChatFormatting.AQUA + check.displayName()
             + EnumChatFormatting.GRAY + " (VL: " + EnumChatFormatting.WHITE + vl + EnumChatFormatting.GRAY + ")");

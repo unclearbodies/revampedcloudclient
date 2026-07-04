@@ -71,6 +71,7 @@ public abstract class GuiIngameMenuMixin extends GuiScreen {
                 } else {
                     this.mc.displayGuiScreen(new GuiMultiplayer(new GuiMainMenu()));
                 }
+                break;
 
             case 2:
             case 3:

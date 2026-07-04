@@ -19,13 +19,15 @@ import org.lwjgl.input.Keyboard;
 
 public class ZoomMod extends Mod {
 
-    private static final Animate animate = new Animate();
-    private static final ScrollHelper scrollHelper = new ScrollHelper(0, 0, 5, 50);
-    private static boolean zoom = false;
+    private static ZoomMod instance;
 
-    private static Setting keybindingSetting;
-    private static Setting zoomAmountSetting;
-    private static Setting smoothZoomSetting;
+    private final Animate animate = new Animate();
+    private final ScrollHelper scrollHelper = new ScrollHelper(0, 0, 5, 50);
+    private boolean zoom = false;
+
+    private Setting keybindingSetting;
+    private Setting zoomAmountSetting;
+    private Setting smoothZoomSetting;
 
     public ZoomMod() {
         super(
@@ -33,6 +35,7 @@ public class ZoomMod extends Mod {
                 "Allows you to zoom into the world.",
                 Type.Mechanic
         );
+        instance = this;
 
         keybindingSetting = new Setting("Keybinding", this, Keyboard.KEY_C);
         zoomAmountSetting = new Setting("Zoom Amount", this, 100, 30);
@@ -43,6 +46,10 @@ public class ZoomMod extends Mod {
         Cloud.INSTANCE.settingManager.addSetting(smoothZoomSetting);
 
         animate.setEase(Easing.LINEAR).setSpeed(700);
+    }
+
+    public static ZoomMod getInstance() {
+        return instance;
     }
 
     @SubscribeEvent
@@ -64,22 +71,22 @@ public class ZoomMod extends Mod {
         animate.setReversed(zoom);
     }
 
-    public static float getFOV() {
+    public float getFOV() {
         if (isSmooth()) {
             return animate.getValueI() - scrollHelper.getCalculatedScroll();
         }
         return zoom ? getAmount() - scrollHelper.getCalculatedScroll() : Cloud.INSTANCE.mc.gameSettings.fovSetting;
     }
 
-    public static boolean isZoom() {
+    public boolean isZoom() {
         return zoom;
     }
 
-    private static boolean isSmooth() {
+    private boolean isSmooth() {
         return smoothZoomSetting.isCheckToggled();
     }
 
-    private static float getAmount() {
+    private float getAmount() {
         return zoomAmountSetting.getCurrentNumber();
     }
 

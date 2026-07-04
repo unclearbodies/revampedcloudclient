@@ -56,7 +56,7 @@ public abstract class ItemRendererMixin {
         if (!(((EntityPlayer)entity).getItemInUseCount() > 0)) return;
         if (!(item.getItemUseAction() == EnumAction.BLOCK)) return;
         if (transformType != ItemCameraTransforms.TransformType.THIRD_PERSON) return;
-        if (Cloud.INSTANCE.settingManager.getSettingByModAndName("Animation", "Block Animation").isCheckToggled()) {
+        if (dev.cloudmc.feature.mod.impl.AnimationMod.isBlockAnimationEnabled()) {
             GlStateManager.rotate(-45.0F, 0.0F, 1.0F, 0.0F);
             GlStateManager.rotate(-20.0F, 1.0F, 0.0F, 0.0F);
             GlStateManager.rotate(-60.0F, 0.0F, 0.0F, 1.0F);
@@ -69,7 +69,7 @@ public abstract class ItemRendererMixin {
      */
     @Inject(method = "doBlockTransformations", at = @At("HEAD"), cancellable = true)
     public void swordBlockTransformations(CallbackInfo ci) {
-        if (Cloud.INSTANCE.settingManager.getSettingByModAndName("Animation", "Block Animation").isCheckToggled()) {
+        if (dev.cloudmc.feature.mod.impl.AnimationMod.isBlockAnimationEnabled()) {
             GlStateManager.translate(-0.24F, 0.17F, 0.0F);
             GlStateManager.rotate(30.0F, 0.0F, 1.0F, 0.0F);
             GlStateManager.rotate(-80.0F, 1.0F, 0.0F, 0.0F);
@@ -85,7 +85,7 @@ public abstract class ItemRendererMixin {
      */
     @Overwrite
     public void renderItemInFirstPerson(float partialTicks) {
-        boolean animationModToggled = Cloud.INSTANCE.modManager.getMod("Animation").isToggled();
+        boolean animationModToggled = Cloud.INSTANCE.modManager.isModToggled("Animation");
         float f = 1.0F - (this.prevEquippedProgress + (this.equippedProgress - this.prevEquippedProgress) * partialTicks);
         EntityPlayerSP player = this.mc.thePlayer;
         float f1 = player.getSwingProgress(partialTicks);
@@ -110,27 +110,23 @@ public abstract class ItemRendererMixin {
                     case EAT:
                     case DRINK:
                         this.performDrinking(player, partialTicks);
-                        this.transformFirstPersonItem(f, animationModToggled &&
-                                Cloud.INSTANCE.settingManager.getSettingByModAndName("Animation", "Eat/Drink Animation").isCheckToggled()
+                        this.transformFirstPersonItem(f, dev.cloudmc.feature.mod.impl.AnimationMod.isEatDrinkAnimationEnabled()
                                 ? f1 : 0.0F);
                         break;
                     case BLOCK:
-                        this.transformFirstPersonItem(f, animationModToggled &&
-                                Cloud.INSTANCE.settingManager.getSettingByModAndName("Animation", "Block Animation").isCheckToggled()
+                        this.transformFirstPersonItem(f, dev.cloudmc.feature.mod.impl.AnimationMod.isBlockAnimationEnabled()
                                 ? f1 : 0.0F);
                         this.doBlockTransformations();
                         break;
                     case BOW:
-                        this.transformFirstPersonItem(f, animationModToggled &&
-                                Cloud.INSTANCE.settingManager.getSettingByModAndName("Animation", "Bow Animation").isCheckToggled()
+                        this.transformFirstPersonItem(f, dev.cloudmc.feature.mod.impl.AnimationMod.isBowAnimationEnabled()
                                 ? f1 : 0.0F);
                         this.doBowTransformations(partialTicks, player);
                 }
             }
             else {
                 this.doItemUsedTransformations(f1);
-                if (this.itemToRender.getItem() instanceof ItemFishingRod && animationModToggled &&
-                        Cloud.INSTANCE.settingManager.getSettingByModAndName("Animation", "Fishing Rod").isCheckToggled()) {
+                if (this.itemToRender.getItem() instanceof ItemFishingRod && dev.cloudmc.feature.mod.impl.AnimationMod.isFishingRodAnimationEnabled()) {
                     GlStateManager.translate(0.0F, 0.0F, -0.35F);
                 }
                 this.transformFirstPersonItem(f, f1);
@@ -149,6 +145,9 @@ public abstract class ItemRendererMixin {
 
     @Redirect(method = "renderFireInFirstPerson", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;translate(FFF)V"))
     public void renderFireInFirstPerson(float x, float y, float z) {
-        GlStateManager.translate(x, y - Cloud.INSTANCE.optionManager.getOptionByName("Fire Height").getCurrentNumber() / 100f, z);
+        dev.cloudmc.feature.option.Option fireHeightOption = null;
+        try { fireHeightOption = Cloud.INSTANCE.optionManager.getOptionByName("Fire Height"); } catch(Exception e) {}
+        float height = fireHeightOption != null ? fireHeightOption.getCurrentNumber() : 50f;
+        GlStateManager.translate(x, y - height / 100f, z);
     }
 }

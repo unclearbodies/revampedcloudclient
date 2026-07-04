@@ -31,11 +31,8 @@ public abstract class RendererLivingEntityMixin<T extends EntityLivingBase> exte
             )
     )
     public Entity canRenderName(RenderManager instance) {
-        if (Cloud.INSTANCE.modManager.getMod("NameTag").isToggled()) {
-            if (Cloud.INSTANCE.settingManager.getSettingByModAndName(
-                    "NameTag", "NameTag in 3rd Person").isCheckToggled()) {
-                return null;
-            }
+        if (dev.cloudmc.feature.mod.impl.NameTagMod.isThirdPersonEnabled()) {
+            return null;
         }
 
         return instance.livingPlayer;
@@ -43,51 +40,45 @@ public abstract class RendererLivingEntityMixin<T extends EntityLivingBase> exte
 
     @Inject(method = "canRenderName(Lnet/minecraft/entity/EntityLivingBase;)Z", at = @At("HEAD"), cancellable = true)
     public void canRenderName(T entity, CallbackInfoReturnable<Boolean> cir) {
-        if(Cloud.INSTANCE.modManager.getMod("NameTag").isToggled()) {
-            if(Cloud.INSTANCE.settingManager.getSettingByModAndName("NameTag", "Disable Player NameTags").isCheckToggled()) {
-                cir.setReturnValue(false);
-            }
+        if(dev.cloudmc.feature.mod.impl.NameTagMod.isDisablePlayerNameTagsEnabled()) {
+            cir.setReturnValue(false);
         }
     }
 
-    @Redirect(method = "setBrightness", at = @At(value = "INVOKE", target = "Ljava/nio/FloatBuffer;put(F)Ljava/nio/FloatBuffer;", ordinal = 0))
+    @Redirect(method = "setBrightness", at = @At(value = "INVOKE", target = "Ljava/nio/FloatBuffer;put(F)Ljava/nio/FloatBuffer;", ordinal = 0, remap = false))
     public FloatBuffer setRed(FloatBuffer instance, float v) {
-        if (Cloud.INSTANCE.modManager.getMod("Hit Color").isToggled()) {
-            instance.put(Cloud.INSTANCE.settingManager.getSettingByModAndName(
-                    "Hit Color", "Damage Color").getColor().getRed() / 255f);
+        if (Cloud.INSTANCE.modManager.isModToggled("Hit Color")) {
+            instance.put(dev.cloudmc.feature.mod.impl.HitColorMod.getDamageColor().getRed() / 255f);
         } else {
             instance.put(1f);
         }
         return instance;
     }
 
-    @Redirect(method = "setBrightness", at = @At(value = "INVOKE", target = "Ljava/nio/FloatBuffer;put(F)Ljava/nio/FloatBuffer;", ordinal = 1))
+    @Redirect(method = "setBrightness", at = @At(value = "INVOKE", target = "Ljava/nio/FloatBuffer;put(F)Ljava/nio/FloatBuffer;", ordinal = 1, remap = false))
     public FloatBuffer setGreen(FloatBuffer instance, float v) {
-        if (Cloud.INSTANCE.modManager.getMod("Hit Color").isToggled()) {
-            instance.put(Cloud.INSTANCE.settingManager.getSettingByModAndName(
-                    "Hit Color", "Damage Color").getColor().getGreen() / 255f);
+        if (Cloud.INSTANCE.modManager.isModToggled("Hit Color")) {
+            instance.put(dev.cloudmc.feature.mod.impl.HitColorMod.getDamageColor().getGreen() / 255f);
         } else {
             instance.put(0f);
         }
         return instance;
     }
 
-    @Redirect(method = "setBrightness", at = @At(value = "INVOKE", target = "Ljava/nio/FloatBuffer;put(F)Ljava/nio/FloatBuffer;", ordinal = 2))
+    @Redirect(method = "setBrightness", at = @At(value = "INVOKE", target = "Ljava/nio/FloatBuffer;put(F)Ljava/nio/FloatBuffer;", ordinal = 2, remap = false))
     public FloatBuffer setBlue(FloatBuffer instance, float v) {
-        if (Cloud.INSTANCE.modManager.getMod("Hit Color").isToggled()) {
-            instance.put(Cloud.INSTANCE.settingManager.getSettingByModAndName(
-                    "Hit Color", "Damage Color").getColor().getBlue() / 255f);
+        if (Cloud.INSTANCE.modManager.isModToggled("Hit Color")) {
+            instance.put(dev.cloudmc.feature.mod.impl.HitColorMod.getDamageColor().getBlue() / 255f);
         } else {
             instance.put(0f);
         }
         return instance;
     }
 
-    @Redirect(method = "setBrightness", at = @At(value = "INVOKE", target = "Ljava/nio/FloatBuffer;put(F)Ljava/nio/FloatBuffer;", ordinal = 3))
+    @Redirect(method = "setBrightness", at = @At(value = "INVOKE", target = "Ljava/nio/FloatBuffer;put(F)Ljava/nio/FloatBuffer;", ordinal = 3, remap = false))
     public FloatBuffer setAlpha(FloatBuffer instance, float v) {
-        if (Cloud.INSTANCE.modManager.getMod("Hit Color").isToggled()) {
-            instance.put(Cloud.INSTANCE.settingManager.getSettingByModAndName(
-                    "Hit Color", "Alpha").getCurrentNumber() / 255f);
+        if (Cloud.INSTANCE.modManager.isModToggled("Hit Color")) {
+            instance.put(dev.cloudmc.feature.mod.impl.HitColorMod.getAlpha());
         } else {
             instance.put(0.3f);
         }

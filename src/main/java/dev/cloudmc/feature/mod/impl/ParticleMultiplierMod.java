@@ -16,6 +16,8 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class ParticleMultiplierMod extends Mod {
 
+    private Setting particleAmountSetting;
+
     public ParticleMultiplierMod() {
         super(
                 "ParticleMultiplier",
@@ -23,7 +25,8 @@ public class ParticleMultiplierMod extends Mod {
                 Type.Visual
         );
 
-        Cloud.INSTANCE.settingManager.addSetting(new Setting("Particle Amount", this, 15, 5));
+        particleAmountSetting = new Setting("Particle Amount", this, 15, 5);
+        Cloud.INSTANCE.settingManager.addSetting(particleAmountSetting);
     }
 
     @SubscribeEvent
@@ -37,17 +40,13 @@ public class ParticleMultiplierMod extends Mod {
                     !Cloud.INSTANCE.mc.thePlayer.isPotionActive(Potion.blindness) &&
                             Cloud.INSTANCE.mc.thePlayer.ridingEntity == null;
 
-            for (int i = 0; i < getAmount(); i++) {
+            int amount = (int) particleAmountSetting.getCurrentNumber();
+            for (int i = 0; i < amount; i++) {
                 Cloud.INSTANCE.mc.thePlayer.onEnchantmentCritical(e.target);
                 if (doCriticalDamage) {
                     Cloud.INSTANCE.mc.thePlayer.onCriticalHit(e.target);
                 }
             }
-
         }
-    }
-
-    private float getAmount() {
-        return Cloud.INSTANCE.settingManager.getSettingByModAndName(getName(), "Particle Amount").getCurrentNumber();
     }
 }

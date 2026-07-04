@@ -228,20 +228,23 @@ public class Helper2D {
         GL11.glEnable(GL_BLEND);
         GL11.glDisable(GL11.GL_CULL_FACE);
         GL11.glDisable(GL11.GL_TEXTURE_2D);
-        glBegin(GL_TRIANGLE_FAN);
+        Tessellator tessellator = Tessellator.getInstance();
+        WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+        worldrenderer.begin(GL_TRIANGLE_FAN, DefaultVertexFormats.POSITION);
 
         ColorHelper.color(color);
 
         float var;
-        glVertex2f(x, y);
+        worldrenderer.pos(x, y, 0).endVertex();
         for (var = h; var <= j; var++) {
-            glVertex2f(
-                    (float) (r * Math.cos(Math.PI * var / 180) + x),
-                    (float) (r * Math.sin(Math.PI * var / 180) + y)
-            );
+            worldrenderer.pos(
+                    (float) (r * net.minecraft.util.MathHelper.cos((float) (Math.PI * var / 180)) + x),
+                    (float) (r * net.minecraft.util.MathHelper.sin((float) (Math.PI * var / 180)) + y),
+                    0
+            ).endVertex();
         }
 
-        glEnd();
+        tessellator.draw();
         GL11.glEnable(GL11.GL_TEXTURE_2D);
         GL11.glEnable(GL11.GL_CULL_FACE);
         GL11.glDisable(GL_BLEND);

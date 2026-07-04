@@ -33,9 +33,9 @@ public class FlashNotification {
 
    private static void start() {
       flashStartMillis = System.currentTimeMillis();
-      Minecraft mc = Minecraft.func_71410_x();
-      mc.func_147118_V().func_147682_a( // getSoundHandler().playSound(...)
-         PositionedSoundRecord.func_147674_a(new ResourceLocation("note.pling"), 0.5F));
+      Minecraft mc = Minecraft.getMinecraft();
+      mc.getSoundHandler().playSound( // getSoundHandler().playSound(...)
+         PositionedSoundRecord.create(new ResourceLocation("note.pling"), 0.5F));
    }
 
    @SubscribeEvent
@@ -60,6 +60,6 @@ public class FlashNotification {
 
       ScaledResolution res = event.resolution;
       int color = (int)(alpha * 255.0F) << 24 | cfg.v.flashColor & 0xFFFFFF;
-      Gui.func_73734_a(0, 0, res.func_78326_a(), res.func_78328_b(), color); // drawRect over the whole screen
+      Gui.drawRect(0, 0, res.getScaledWidth(), res.getScaledHeight(), color); // drawRect over the whole screen
    }
 }

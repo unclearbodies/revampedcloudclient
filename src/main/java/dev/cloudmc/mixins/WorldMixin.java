@@ -12,10 +12,10 @@ public abstract class WorldMixin {
 
     @Redirect(method = "getCelestialAngle", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/storage/WorldInfo;getWorldTime()J"))
     public long setCelestialAngle(WorldInfo instance) {
-        if (Cloud.INSTANCE.modManager.getMod("TimeChanger").isToggled()) {
+        if (Cloud.INSTANCE.modManager.isModToggled("TimeChanger")) {
             return (long) (instance.getWorldTime() *
-                    Cloud.INSTANCE.settingManager.getSettingByModAndName("TimeChanger", "Speed").getCurrentNumber() +
-                    Cloud.INSTANCE.settingManager.getSettingByModAndName("TimeChanger", "Offset").getCurrentNumber());
+                    dev.cloudmc.feature.mod.impl.TimeChangerMod.getSpeed() +
+                    dev.cloudmc.feature.mod.impl.TimeChangerMod.getOffset());
         }
         return instance.getWorldTime();
     }

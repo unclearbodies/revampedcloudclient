@@ -17,20 +17,40 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class GuiTweaksMod extends Mod {
 
+    private static GuiTweaksMod instance;
+
+    private Setting blurBackgroundSetting;
+    private Setting darkenBackgroundSetting;
+
     public GuiTweaksMod() {
         super(
                 "Gui Tweaks",
                 "Adds Tweaks to the Gui like blur and transparency.",
                 Type.Tweaks
         );
+        instance = this;
 
-        Cloud.INSTANCE.settingManager.addSetting(new Setting("Blur Background", this, true));
-        Cloud.INSTANCE.settingManager.addSetting(new Setting("Darken Background", this, true));
+        blurBackgroundSetting = new Setting("Blur Background", this, true);
+        darkenBackgroundSetting = new Setting("Darken Background", this, true);
+
+        Cloud.INSTANCE.settingManager.addSetting(blurBackgroundSetting);
+        Cloud.INSTANCE.settingManager.addSetting(darkenBackgroundSetting);
+    }
+
+    /** Used by GuiScreenMixin to check darken background without string lookups. */
+    public static boolean isDarkenBackgroundEnabled() {
+        return instance != null && instance.isToggled() && instance.darkenBackgroundSetting.isCheckToggled();
+    }
+
+    /** Whether the darken-background setting should be used (mod must be toggled). */
+    public static boolean shouldDarkenBackground() {
+        // Darken background if: mod is off (vanilla behavior), OR mod is on and setting is checked
+        return instance == null || !instance.isToggled() || instance.darkenBackgroundSetting.isCheckToggled();
     }
 
     @SubscribeEvent
     public void onGuiOpen(GuiOpenEvent e) {
-        if (Cloud.INSTANCE.settingManager.getSettingByModAndName(getName(), "Blur Background").isCheckToggled()) {
+        if (blurBackgroundSetting.isCheckToggled()) {
             if (!(e.gui instanceof GuiChat)) {
                 try {
                     Cloud.INSTANCE.mc.entityRenderer.loadShader(

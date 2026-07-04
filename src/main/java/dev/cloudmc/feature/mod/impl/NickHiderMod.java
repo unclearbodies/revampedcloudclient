@@ -12,27 +12,32 @@ import dev.cloudmc.feature.setting.Setting;
 
 public class NickHiderMod extends Mod {
 
+    private static NickHiderMod instance;
+    private Setting nicknameSetting;
+
     public NickHiderMod() {
         super(
                 "NickHider",
                 "Hides your nickname in game by replacing it.",
                 Type.Visual
         );
+        instance = this;
 
-        Cloud.INSTANCE.settingManager.addSetting(new Setting("Nickname", this, "Name", "You", 3));
+        nicknameSetting = new Setting("Nickname", this, "Name", "You", 3);
+        Cloud.INSTANCE.settingManager.addSetting(nicknameSetting);
     }
 
     public static String replaceNickname(String nick) {
-        if(Cloud.INSTANCE != null) {
-            if (Cloud.INSTANCE.modManager != null) {
-                if (Cloud.INSTANCE.modManager.getMod("NickHider").isToggled()) {
-                    return nick.replace(
-                            Cloud.INSTANCE.mc.getSession().getUsername(),
-                            Cloud.INSTANCE.settingManager.getSettingByModAndName("NickHider", "Nickname").getText()
-                    );
-                }
-            }
+        if (instance == null || Cloud.INSTANCE == null || Cloud.INSTANCE.modManager == null || !Cloud.INSTANCE.modManager.isModToggled("NickHider")) {
+            return nick;
         }
-        return nick;
+        String replacement = instance.nicknameSetting.getText();
+        if (replacement == null || replacement.isEmpty()) {
+            return nick;
+        }
+        return nick.replace(
+                Cloud.INSTANCE.mc.getSession().getUsername(),
+                replacement
+        );
     }
 }

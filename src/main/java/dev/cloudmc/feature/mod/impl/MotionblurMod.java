@@ -22,6 +22,7 @@ public class MotionblurMod extends Mod {
 
     private Framebuffer blurBufferMain = null;
     private Framebuffer blurBufferInto = null;
+    private Setting amountSetting;
 
     public MotionblurMod() {
         super(
@@ -30,7 +31,8 @@ public class MotionblurMod extends Mod {
                 Type.Visual
         );
 
-        Cloud.INSTANCE.settingManager.addSetting(new Setting("Amount", this, 10, 6));
+        amountSetting = new Setting("Amount", this, 10, 6);
+        Cloud.INSTANCE.settingManager.addSetting(amountSetting);
     }
 
     private static Framebuffer checkFramebufferSizes(Framebuffer framebuffer, int width, int height) {
@@ -109,6 +111,19 @@ public class MotionblurMod extends Mod {
     }
 
     private float getAmount() {
-        return Cloud.INSTANCE.settingManager.getSettingByModAndName(getName(), "Amount").getCurrentNumber();
+        return amountSetting.getCurrentNumber();
+    }
+
+    @Override
+    public void onDisable() {
+        super.onDisable();
+        if (blurBufferMain != null) {
+            blurBufferMain.deleteFramebuffer();
+            blurBufferMain = null;
+        }
+        if (blurBufferInto != null) {
+            blurBufferInto.deleteFramebuffer();
+            blurBufferInto = null;
+        }
     }
 }

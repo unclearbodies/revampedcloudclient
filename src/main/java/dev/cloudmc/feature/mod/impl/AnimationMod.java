@@ -19,17 +19,54 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 public class AnimationMod extends Mod {
 
+    private static AnimationMod instance;
+
+    private Setting blockAnimationSetting;
+    private Setting eatDrinkSetting;
+    private Setting bowSetting;
+    private Setting fishingRodSetting;
+
     public AnimationMod() {
         super(
                 "Animation",
                 "1.7 Animations in 1.8.",
                 Type.Visual
         );
+        instance = this;
 
-        Cloud.INSTANCE.settingManager.addSetting(new Setting("Block Animation", this, true));
-        Cloud.INSTANCE.settingManager.addSetting(new Setting("Eat/Drink Animation", this, true));
-        Cloud.INSTANCE.settingManager.addSetting(new Setting("Bow Animation", this, true));
-        Cloud.INSTANCE.settingManager.addSetting(new Setting("Fishing Rod", this, true));
+        blockAnimationSetting = new Setting("Block Animation", this, true);
+        eatDrinkSetting = new Setting("Eat/Drink Animation", this, true);
+        bowSetting = new Setting("Bow Animation", this, true);
+        fishingRodSetting = new Setting("Fishing Rod", this, true);
+
+        Cloud.INSTANCE.settingManager.addSetting(blockAnimationSetting);
+        Cloud.INSTANCE.settingManager.addSetting(eatDrinkSetting);
+        Cloud.INSTANCE.settingManager.addSetting(bowSetting);
+        Cloud.INSTANCE.settingManager.addSetting(fishingRodSetting);
+    }
+
+    public static AnimationMod getInstance() {
+        return instance;
+    }
+
+    /** Used by mixins to check if block animation is enabled without string lookups. */
+    public static boolean isBlockAnimationEnabled() {
+        return instance != null && instance.isToggled() && instance.blockAnimationSetting.isCheckToggled();
+    }
+
+    /** Used by mixins to check if eat/drink animation is enabled. */
+    public static boolean isEatDrinkAnimationEnabled() {
+        return instance != null && instance.isToggled() && instance.eatDrinkSetting.isCheckToggled();
+    }
+
+    /** Used by mixins to check if bow animation is enabled. */
+    public static boolean isBowAnimationEnabled() {
+        return instance != null && instance.isToggled() && instance.bowSetting.isCheckToggled();
+    }
+
+    /** Used by mixins to check if fishing rod animation is enabled. */
+    public static boolean isFishingRodAnimationEnabled() {
+        return instance != null && instance.isToggled() && instance.fishingRodSetting.isCheckToggled();
     }
 
     @SubscribeEvent
@@ -37,12 +74,12 @@ public class AnimationMod extends Mod {
         if (Cloud.INSTANCE.mc.theWorld == null || Cloud.INSTANCE.mc.thePlayer == null) return;
         if (e.phase == TickEvent.Phase.START) return;
         ItemStack heldItem = Cloud.INSTANCE.mc.thePlayer.getHeldItem();
-        if (Cloud.INSTANCE.modManager.getMod("Animation").isToggled() && heldItem != null) {
-            if (Cloud.INSTANCE.settingManager.getSettingByModAndName(getName(), "Block Animation").isCheckToggled() && heldItem.getItemUseAction() == EnumAction.BLOCK) {
+        if (heldItem != null) {
+            if (blockAnimationSetting.isCheckToggled() && heldItem.getItemUseAction() == EnumAction.BLOCK) {
                 attemptSwing();
-            } else if (Cloud.INSTANCE.settingManager.getSettingByModAndName(getName(), "Eat/Drink Animation").isCheckToggled() && heldItem.getItemUseAction() == EnumAction.DRINK) {
+            } else if (eatDrinkSetting.isCheckToggled() && heldItem.getItemUseAction() == EnumAction.DRINK) {
                 attemptSwing();
-            } else if (Cloud.INSTANCE.settingManager.getSettingByModAndName(getName(), "Bow Animation").isCheckToggled() && heldItem.getItemUseAction() == EnumAction.BOW) {
+            } else if (bowSetting.isCheckToggled() && heldItem.getItemUseAction() == EnumAction.BOW) {
                 attemptSwing();
             }
         }

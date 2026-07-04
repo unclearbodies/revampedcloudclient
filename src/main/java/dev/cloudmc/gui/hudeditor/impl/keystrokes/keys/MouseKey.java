@@ -17,9 +17,23 @@ import java.awt.*;
 public class MouseKey {
 
     private Animate animate = new Animate();
+    private int lastCps = -1;
+    private String lastCpsString = "";
 
     public MouseKey() {
         animate.setEase(Easing.CUBIC_IN).setMin(0).setMax(100).setSpeed(1000);
+    }
+
+    private String getLabel(int mouseButton, boolean cps) {
+        int currentCps = getCPS(mouseButton);
+        if (currentCps != 0 && cps) {
+            if (currentCps != lastCps) {
+                lastCps = currentCps;
+                lastCpsString = currentCps + " CPS";
+            }
+            return lastCpsString;
+        }
+        return mouseButton == 0 ? "LMB" : "RMB";
     }
 
     public void renderKey(int x, int y, int width, int height, boolean modern, int mouseButton, int color, int fontColor, boolean background, boolean cps) {
@@ -39,12 +53,14 @@ public class MouseKey {
             }
 
             if (mouseDown || !animate.hasFinished()) {
-                Helper2D.drawRoundedRectangle(x, y, width, height, 2, new Color(255, 255, 255, 100 - animate.getValueI()).getRGB(), 0);
+                int alpha = 100 - animate.getValueI();
+                Helper2D.drawRoundedRectangle(x, y, width, height, 2, (alpha << 24) | 0xFFFFFF, 0);
             }
 
+            String label = getLabel(mouseButton, cps);
             Cloud.INSTANCE.fontHelper.size20.drawString(
-                    getCPS(mouseButton) != 0 && cps ? getCPS(mouseButton) + " CPS" : mouseButton == 0 ? "LMB" : "RMB",
-                    x - Cloud.INSTANCE.fontHelper.size20.getStringWidth(getCPS(mouseButton) != 0 && cps ? getCPS(mouseButton) + " CPS" : mouseButton == 0 ? "LMB" : "RMB") / 2f + width / 2f,
+                    label,
+                    x - Cloud.INSTANCE.fontHelper.size20.getStringWidth(label) / 2f + width / 2f,
                     y + height / 2f - 4,
                     fontColor
             );
@@ -55,12 +71,14 @@ public class MouseKey {
             }
 
             if (mouseDown) {
-                Helper2D.drawRectangle(x, y, width, height, new Color(255, 255, 255, 100 - animate.getValueI()).getRGB());
+                int alpha = 100 - animate.getValueI();
+                Helper2D.drawRectangle(x, y, width, height, (alpha << 24) | 0xFFFFFF);
             }
 
+            String label = getLabel(mouseButton, cps);
             Cloud.INSTANCE.mc.fontRendererObj.drawString(
-                    getCPS(mouseButton) != 0 && cps ? getCPS(mouseButton) + " CPS" : mouseButton == 0 ? "LMB" : "RMB",
-                    x - Minecraft.getMinecraft().fontRendererObj.getStringWidth(getCPS(mouseButton) != 0 && cps ? getCPS(mouseButton) + " CPS" : mouseButton == 0 ? "LMB" : "RMB") / 2 + width / 2,
+                    label,
+                    x - Minecraft.getMinecraft().fontRendererObj.getStringWidth(label) / 2 + width / 2,
                     y + height / 2 - 4,
                     fontColor
             );

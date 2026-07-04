@@ -70,15 +70,15 @@ public class ModuleCard {
       RenderUtil.drawRoundedOutline(this.x, this.y, this.width, this.height, 5.0F, 1.0F,
          RenderUtil.applyAlpha(enabled ? COLOR_BORDER_ON : COLOR_BORDER_OFF, alphaMult));
 
-      fontRenderer.func_175063_a(this.name, (float)(this.x + PAD), (float)(this.y + PAD), RenderUtil.applyAlpha(0xFFFFFFFF, alphaMult)); // drawStringWithShadow
-      List<String> lines = fontRenderer.func_78271_c(this.description, this.width - PAD * 2);                                            // listFormattedStringToWidth
+      fontRenderer.drawStringWithShadow(this.name, (float)(this.x + PAD), (float)(this.y + PAD), RenderUtil.applyAlpha(0xFFFFFFFF, alphaMult)); // drawStringWithShadow
+      List<String> lines = fontRenderer.listFormattedStringToWidth(this.description, this.width - PAD * 2);                                            // listFormattedStringToWidth
       for (int i = 0; i < lines.size() && i < 2; ++i) {
-         fontRenderer.func_78276_b(lines.get(i), this.x + PAD, this.y + 20 + i * 10, RenderUtil.applyAlpha(COLOR_DESC, alphaMult));      // drawString
+         fontRenderer.drawString(lines.get(i), this.x + PAD, this.y + 20 + i * 10, RenderUtil.applyAlpha(COLOR_DESC, alphaMult));      // drawString
       }
 
       int toggleX = this.x + this.width - PAD - TOGGLE_WIDTH;
       int toggleY = this.y + this.height - PAD - TOGGLE_HEIGHT;
-      fontRenderer.func_78276_b(enabled ? "ON" : "OFF", this.x + PAD, toggleY + 2,
+      fontRenderer.drawString(enabled ? "ON" : "OFF", this.x + PAD, toggleY + 2,
          RenderUtil.applyAlpha(enabled ? 0xFFFFFFFF : 0xFF6E6E6E, alphaMult));
       RenderUtil.drawTogglePill(toggleX, toggleY, TOGGLE_WIDTH, TOGGLE_HEIGHT, this.knobAnim, alphaMult);
    }
@@ -91,8 +91,8 @@ public class ModuleCard {
          return false;
       }
       this.setter.accept(!this.getter.getAsBoolean());
-      Minecraft.func_71410_x().func_147118_V().func_147682_a( // getSoundHandler().playSound(...)
-         PositionedSoundRecord.func_147674_a(new ResourceLocation("gui.button.press"), 1.0F));
+      Minecraft.getMinecraft().getSoundHandler().playSound( // getSoundHandler().playSound(...)
+         PositionedSoundRecord.create(new ResourceLocation("gui.button.press"), 1.0F));
       return true;
    }
 

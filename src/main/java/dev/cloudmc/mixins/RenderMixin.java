@@ -35,11 +35,18 @@ public abstract class RenderMixin {
     protected void renderLivingLabel(Entity entityIn, String str, double x, double y, double z, int maxDistance) {
         double d0 = entityIn.getDistanceSqToEntity(this.renderManager.livingPlayer);
 
-        boolean nameTagToggled = Cloud.INSTANCE.modManager.getMod("NameTag").isToggled();
-        int color = Cloud.INSTANCE.settingManager.getSettingByModAndName("NameTag", "Font Color").getColor().getRGB();
-        float alpha = nameTagToggled ? Cloud.INSTANCE.settingManager.getSettingByModAndName("NameTag", "Opacity").getCurrentNumber() / 255f : 0.25f;
-        float scale = nameTagToggled ? Cloud.INSTANCE.settingManager.getSettingByModAndName("NameTag", "Size").getCurrentNumber() : 1;
-        float yPos = nameTagToggled ? Cloud.INSTANCE.settingManager.getSettingByModAndName("NameTag", "Y Position").getCurrentNumber() - 2.5f : 0;
+        boolean nameTagToggled = Cloud.INSTANCE.modManager.isModToggled("NameTag");
+        int color = 0;
+        float alpha = 0.25f;
+        float scale = 1f;
+        float yPos = 0f;
+
+        if (nameTagToggled) {
+            color = dev.cloudmc.feature.mod.impl.NameTagMod.getFontColorRGB();
+            alpha = dev.cloudmc.feature.mod.impl.NameTagMod.getOpacity();
+            scale = dev.cloudmc.feature.mod.impl.NameTagMod.getSize();
+            yPos = dev.cloudmc.feature.mod.impl.NameTagMod.getYPosition();
+        }
 
         if (d0 <= (double) (maxDistance * maxDistance)) {
             FontRenderer fontrenderer = this.getFontRendererFromRenderManager();

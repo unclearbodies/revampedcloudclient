@@ -41,18 +41,18 @@ public class NametagOverlayRenderer {
          return;
       }
 
-      Minecraft mc = Minecraft.func_71410_x();
-      if (mc.field_71441_e == null || mc.field_71439_g == null || mc.func_147114_u() == null) {
+      Minecraft mc = Minecraft.getMinecraft();
+      if (mc.theWorld == null || mc.thePlayer == null || mc.getNetHandler() == null) {
          return;
       }
-      if (!mc.field_71474_y.field_74321_H.func_151470_d()) {
+      if (!mc.gameSettings.keyBindPlayerList.isKeyDown()) {
          return;
       }
 
-      NetHandlerPlayClient netHandler = mc.func_147114_u();
+      NetHandlerPlayClient netHandler = mc.getNetHandler();
       Set<NetworkPlayerInfo> markedInfos = Collections.newSetFromMap(new IdentityHashMap<NetworkPlayerInfo, Boolean>());
       for (UUID uuid : AlertManager.markedPlayerIds()) {
-         NetworkPlayerInfo info = netHandler.func_175102_a(uuid);
+         NetworkPlayerInfo info = netHandler.getPlayerInfo(uuid);
          if (info != null) {
             markedInfos.add(info);
          }
@@ -61,7 +61,7 @@ public class NametagOverlayRenderer {
          return;
       }
 
-      GuiPlayerTabOverlay tabOverlay = mc.field_71456_v.func_175181_h();
+      GuiPlayerTabOverlay tabOverlay = mc.ingameGUI.getTabList();
       List<NetworkPlayerInfo> players = this.sortedPlayers(mc, tabOverlay);
       if (players.size() > MAX_TAB_PLAYERS) {
          players = new ArrayList<NetworkPlayerInfo>(players.subList(0, MAX_TAB_PLAYERS));
@@ -77,15 +77,15 @@ public class NametagOverlayRenderer {
          return;
       }
 
-      FontRenderer font = mc.field_71466_p;
+      FontRenderer font = mc.fontRendererObj;
       int maxNameWidth = 0;
       for (NetworkPlayerInfo info : players) {
-         maxNameWidth = Math.max(maxNameWidth, font.func_78256_a(tabOverlay.func_175243_a(info)));
+         maxNameWidth = Math.max(maxNameWidth, font.getStringWidth(tabOverlay.getPlayerName(info)));
       }
 
-      Scoreboard scoreboard = mc.field_71441_e.func_96441_U();
-      ScoreObjective objective = scoreboard.func_96539_a(0);
-      int scoreWidth = objective != null && objective.func_178766_e() == IScoreObjectiveCriteria.EnumRenderType.HEARTS ? 90 : 0;
+      Scoreboard scoreboard = mc.theWorld.getScoreboard();
+      ScoreObjective objective = scoreboard.getObjectiveInDisplaySlot(0);
+      int scoreWidth = objective != null && objective.getRenderType() == IScoreObjectiveCriteria.EnumRenderType.HEARTS ? 90 : 0;
 
       int playerCount = players.size();
       int rows = playerCount;
@@ -96,7 +96,7 @@ public class NametagOverlayRenderer {
       }
 
       boolean hasSkins = true;
-      int screenWidth = event.resolution.func_78326_a();
+      int screenWidth = event.resolution.getScaledWidth();
       int rowWidth = Math.min(columns * ((hasSkins ? 9 : 0) + maxNameWidth + scoreWidth + 13), screenWidth - 50) / columns;
       int startX = screenWidth / 2 - (rowWidth * columns + (columns - 1) * 5) / 2;
       int baseY = this.playerListTop(font, tabOverlay, screenWidth);
@@ -111,9 +111,9 @@ public class NametagOverlayRenderer {
          int row = i % rows;
          int rowX = startX + column * rowWidth + column * 5;
          int rowY = baseY + row * 9;
-         String name = tabOverlay.func_175243_a(info);
+         String name = tabOverlay.getPlayerName(info);
          int nameX = rowX + (hasSkins ? 9 : 0);
-         float markerX = Math.min(nameX + font.func_78256_a(name) + 7.0F, rowX + rowWidth - 4.0F);
+         float markerX = Math.min(nameX + font.getStringWidth(name) + 7.0F, rowX + rowWidth - 4.0F);
          float markerY = rowY + 4.5F;
          RenderUtil.drawTriangle(markerX, markerY, 5.5F, 6.0F, iconColor);
          RenderUtil.drawTriangleOutline(markerX, markerY, 5.5F, 6.0F, 1.0F, 0xC8000000);
@@ -121,17 +121,17 @@ public class NametagOverlayRenderer {
    }
 
    private List<NetworkPlayerInfo> sortedPlayers(Minecraft mc, GuiPlayerTabOverlay tabOverlay) {
-      List<NetworkPlayerInfo> vanillaSorted = this.vanillaSortedPlayers(mc);
+      List<NetworkPlayerInfo> vanillaSorted = this.vanillaSortedPlayers(mc, tabOverlay);
       if (vanillaSorted != null) {
          return vanillaSorted;
       }
 
-      List<NetworkPlayerInfo> players = new ArrayList<NetworkPlayerInfo>(mc.func_147114_u().func_175106_d());
+      List<NetworkPlayerInfo> players = new ArrayList<NetworkPlayerInfo>(mc.getNetHandler().getPlayerInfoMap());
       Collections.sort(players, new Comparator<NetworkPlayerInfo>() {
          @Override
          public int compare(NetworkPlayerInfo a, NetworkPlayerInfo b) {
-            boolean aActive = a.func_178848_b() != GameType.SPECTATOR;
-            boolean bActive = b.func_178848_b() != GameType.SPECTATOR;
+            boolean aActive = a.getGameType() != GameType.SPECTATOR;
+            boolean bActive = b.getGameType() != GameType.SPECTATOR;
             if (aActive != bActive) {
                return aActive ? -1 : 1;
             }
@@ -141,19 +141,19 @@ public class NametagOverlayRenderer {
                return team;
             }
 
-            return cleanName(tabOverlay.func_175243_a(a)).compareTo(cleanName(tabOverlay.func_175243_a(b)));
+            return cleanName(tabOverlay.getPlayerName(a)).compareTo(cleanName(tabOverlay.getPlayerName(b)));
          }
       });
       return players;
    }
 
-   private List<NetworkPlayerInfo> vanillaSortedPlayers(Minecraft mc) {
+   private List<NetworkPlayerInfo> vanillaSortedPlayers(Minecraft mc, GuiPlayerTabOverlay tabOverlay) {
       try {
-         Field orderingField = GuiPlayerTabOverlay.class.getDeclaredField("field_175252_a");
+         Field orderingField = GuiPlayerTabOverlay.class.getDeclaredField("ENTRY_ORDERING");
          orderingField.setAccessible(true);
-         Object ordering = orderingField.get(null);
+         Object ordering = orderingField.get(tabOverlay);
          Method sortedCopy = ordering.getClass().getMethod("sortedCopy", Iterable.class);
-         Object result = sortedCopy.invoke(ordering, mc.func_147114_u().func_175106_d());
+         Object result = sortedCopy.invoke(ordering, mc.getNetHandler().getPlayerInfoMap());
          if (!(result instanceof List)) {
             return null;
          }
@@ -172,13 +172,13 @@ public class NametagOverlayRenderer {
    }
 
    private int playerListTop(FontRenderer font, GuiPlayerTabOverlay tabOverlay, int screenWidth) {
-      IChatComponent header = this.readTabComponent(tabOverlay, "field_175256_i");
+      IChatComponent header = this.readTabComponent(tabOverlay, "header");
       if (header == null) {
          return 10;
       }
 
-      List<String> lines = font.func_78271_c(header.func_150254_d(), screenWidth - 50);
-      return 10 + lines.size() * font.field_78288_b + 1;
+      List<String> lines = font.listFormattedStringToWidth(header.getFormattedText(), screenWidth - 50);
+      return 10 + lines.size() * font.FONT_HEIGHT + 1;
    }
 
    private IChatComponent readTabComponent(GuiPlayerTabOverlay tabOverlay, String fieldName) {
@@ -193,12 +193,12 @@ public class NametagOverlayRenderer {
    }
 
    private static String teamName(NetworkPlayerInfo info) {
-      ScorePlayerTeam team = info.func_178850_i();
-      return team == null ? "" : team.func_96661_b();
+      ScorePlayerTeam team = info.getPlayerTeam();
+      return team == null ? "" : team.getRegisteredName();
    }
 
    private static String cleanName(String name) {
-      String clean = EnumChatFormatting.func_110646_a(name);
+      String clean = EnumChatFormatting.getTextWithoutFormattingCodes(name);
       return clean == null ? "" : clean;
    }
 

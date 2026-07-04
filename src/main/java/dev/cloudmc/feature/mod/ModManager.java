@@ -13,6 +13,8 @@ import java.util.ArrayList;
 public class ModManager {
 
     public java.util.LinkedHashMap<String, Mod> mods = new java.util.LinkedHashMap<>();
+    private java.util.HashMap<String, Mod> lookupMap = new java.util.HashMap<>();
+    private ArrayList<Mod> cachedMods = null;
 
     public ModManager() {
         init();
@@ -23,6 +25,8 @@ public class ModManager {
      */
 
     public void init() {
+        addMod(new AutoClickerMod());
+        addMod(new ClutchMod());
         addMod(new ToggleSprintMod());
         addMod(new ToggleSneakMod());
         addMod(new FpsMod());
@@ -69,6 +73,9 @@ public class ModManager {
         addMod(new HitParticlesMod());
         addMod(new TPSMod());
         addMod(new CapeMod());
+        addMod(new HitboxOnlyMod());
+        addMod(new DiscordRPCMod());
+        addMod(new BorderlessFullscreenMod());
     }
 
     /**
@@ -76,7 +83,10 @@ public class ModManager {
      */
 
     public ArrayList<Mod> getMods() {
-        return new ArrayList<>(mods.values());
+        if (cachedMods == null) {
+            cachedMods = new ArrayList<>(mods.values());
+        }
+        return cachedMods;
     }
 
     /**
@@ -86,7 +96,21 @@ public class ModManager {
      */
 
     public Mod getMod(String name) {
-        return mods.get(name);
+        Mod mod = lookupMap.get(name.toLowerCase());
+        if (mod != null) {
+            return mod;
+        }
+        throw new IllegalArgumentException("Mod not found: " + name);
+    }
+
+    /**
+     * Defensive helper to check if a mod is toggled
+     * @param name The name of the mod
+     * @return true if toggled, false if not toggled or not found
+     */
+    public boolean isModToggled(String name) {
+        Mod mod = lookupMap.get(name.toLowerCase());
+        return mod != null && mod.isToggled();
     }
 
     /**
@@ -95,6 +119,30 @@ public class ModManager {
      */
 
     public void addMod(Mod mod) {
+        if (mod.getType() != dev.cloudmc.feature.mod.Type.Hud && mod.hasKeybind()) {
+            dev.cloudmc.Cloud.INSTANCE.settingManager.addSetting(new dev.cloudmc.feature.setting.Setting("Toggle Keybind", mod, org.lwjgl.input.Keyboard.KEY_NONE));
+        }
         mods.put(mod.getName(), mod);
+        lookupMap.put(mod.getName().toLowerCase(), mod);
+        cachedMods = null;
+    }
+
+    @net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+    public void onKey(net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent event) {
+        if (org.lwjgl.input.Keyboard.getEventKeyState()) {
+            int key = org.lwjgl.input.Keyboard.getEventKey();
+            if (key != org.lwjgl.input.Keyboard.KEY_NONE) {
+                for (Mod mod : getMods()) {
+                    try {
+                        dev.cloudmc.feature.setting.Setting setting = dev.cloudmc.Cloud.INSTANCE.settingManager.getSettingByModAndName(mod.getName(), "Toggle Keybind");
+                        if (setting.getKey() == key) {
+                            mod.toggle();
+                        }
+                    } catch (IllegalArgumentException e) {
+                        // Mod doesn't have a Toggle Keybind setting (e.g., HUD mods, Cape)
+                    }
+                }
+            }
+        }
     }
 }

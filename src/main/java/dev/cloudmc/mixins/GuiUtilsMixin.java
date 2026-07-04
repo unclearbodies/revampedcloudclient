@@ -71,7 +71,7 @@ public abstract class GuiUtilsMixin {
 
         float scroll;
         float newToolTipHeight = tooltipHeight + 20;
-        if (shouldScroll && Cloud.INSTANCE.modManager.getMod("ScrollTooltips").isToggled()) {
+        if (shouldScroll && Cloud.INSTANCE.modManager.isModToggled("ScrollTooltips")) {
             scrollHelper.updateScroll();
             scrollHelper.setHeight(newToolTipHeight);
             scrollHelper.setMaxScroll(screenHeight);

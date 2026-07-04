@@ -95,6 +95,7 @@ public class SprintHud extends HudMod {
     }
 
     private boolean isSprinting() {
-        return ToggleSprintMod.isSprinting();
+        ToggleSprintMod mod = (ToggleSprintMod) Cloud.INSTANCE.modManager.getMod("ToggleSprint");
+        return mod != null && mod.isSprinting();
     }
 }

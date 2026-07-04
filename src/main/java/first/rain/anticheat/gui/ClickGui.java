@@ -2,6 +2,7 @@ package first.rain.anticheat.gui;
 
 import first.rain.anticheat.config.cfg;
 import first.rain.anticheat.util.RenderUtil;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.audio.PositionedSoundRecord;
@@ -58,17 +59,17 @@ public class ClickGui extends GuiScreen {
    }
 
    @Override
-   public void func_73866_w_() {
+   public void initGui() {
       if (panelX == Integer.MIN_VALUE) {
-         panelX = (this.field_146294_l - this.panelWidth) / 2;
-         panelY = (this.field_146295_m - this.panelHeight) / 2;
+         panelX = (this.width - this.panelWidth) / 2;
+         panelY = (this.height - this.panelHeight) / 2;
       }
       this.clampPanel();
       this.lastFrameMillis = System.currentTimeMillis();
    }
 
    @Override
-   public void func_73863_a(int mouseX, int mouseY, float partialTicks) {
+   public void drawScreen(int mouseX, int mouseY, float partialTicks) {
       long now = System.currentTimeMillis();
       float deltaSeconds = Math.min((float)(now - this.lastFrameMillis) / 1000.0F, 0.1F);
       this.lastFrameMillis = now;
@@ -85,15 +86,15 @@ public class ClickGui extends GuiScreen {
          this.tabAnim = tabTarget;
       }
 
-      func_73734_a(0, 0, this.field_146294_l, this.field_146295_m, 0x88000000);
+      drawRect(0, 0, this.width, this.height, 0x88000000);
       RenderUtil.drawRoundedShadow(panelX, panelY, this.panelWidth, this.panelHeight, 7.0F);
       RenderUtil.drawRoundedRect(panelX, panelY, this.panelWidth, this.panelHeight, 7.0F, 0xFA0C0C0C);
       RenderUtil.drawRoundedOutline(panelX, panelY, this.panelWidth, this.panelHeight, 7.0F, 1.0F, 0x46FFFFFF);
 
       int titleTextY = panelY + (TITLE_BAR_HEIGHT - 8) / 2;
-      this.field_146289_q.func_175063_a("AntiCheat", (float)(panelX + PADDING), (float)titleTextY, 0xFFFFFFFF);
-      String hint = "drag";
-      this.field_146289_q.func_78276_b(hint, panelX + this.panelWidth - PADDING - this.field_146289_q.func_78256_a(hint), titleTextY, 0xFF5A5A5A);
+      this.fontRendererObj.drawStringWithShadow("AntiCheat", (float)(panelX + PADDING), (float)titleTextY, 0xFFFFFFFF);
+      String hint = "BETA";
+      this.fontRendererObj.drawString(hint, panelX + this.panelWidth - PADDING - this.fontRendererObj.getStringWidth(hint), titleTextY, 0xFF5A5A5A);
 
       this.drawTabs(mouseX, mouseY);
 
@@ -109,21 +110,21 @@ public class ClickGui extends GuiScreen {
          for (int i = 0; i < this.alertCards.size(); ++i) {
             ModuleCard card = this.alertCards.get(i);
             card.setPosition(panelX + PADDING + (i % 3) * (CARD_W + GAP), contentY + (i / 3) * (CARD_H + GAP));
-            card.render(this.field_146289_q, alertsMouseX, mouseY, deltaSeconds, alertsAlpha);
+            card.render(this.fontRendererObj, alertsMouseX, mouseY, deltaSeconds, alertsAlpha);
          }
       }
       if (notifAlpha > 0.02F) {
          this.flashCard.setPosition(panelX + PADDING, contentY);
-         this.flashCard.render(this.field_146289_q, notifMouseX, mouseY, deltaSeconds, notifAlpha);
+         this.flashCard.render(this.fontRendererObj, notifMouseX, mouseY, deltaSeconds, notifAlpha);
          this.debugCard.setPosition(panelX + PADDING + 2 * (CARD_W + GAP), contentY);
-         this.debugCard.render(this.field_146289_q, notifMouseX, mouseY, deltaSeconds, notifAlpha);
+         this.debugCard.render(this.fontRendererObj, notifMouseX, mouseY, deltaSeconds, notifAlpha);
       }
       if (nametagAlpha > 0.02F) {
          this.nametagCard.setPosition(panelX + PADDING, contentY);
-         this.nametagCard.render(this.field_146289_q, nametagMouseX, mouseY, deltaSeconds, nametagAlpha);
+         this.nametagCard.render(this.fontRendererObj, nametagMouseX, mouseY, deltaSeconds, nametagAlpha);
       }
 
-      super.func_73863_a(mouseX, mouseY, partialTicks);
+      super.drawScreen(mouseX, mouseY, partialTicks);
    }
 
    private void drawTabs(int mouseX, int mouseY) {
@@ -136,12 +137,12 @@ public class ClickGui extends GuiScreen {
       int alertsColor = activeTab == TAB_ALERTS ? 0xFFFFFFFF : (hoverAlerts ? 0xFFB4B4B4 : 0xFF6E6E6E);
       int notifColor = activeTab == TAB_NOTIFICATIONS ? 0xFFFFFFFF : (hoverNotif ? 0xFFB4B4B4 : 0xFF6E6E6E);
       int nametagColor = activeTab == TAB_NAMETAGS ? 0xFFFFFFFF : (hoverNametag ? 0xFFB4B4B4 : 0xFF6E6E6E);
-      this.field_146289_q.func_78276_b("Alerts", tabs[0], tabTextY, alertsColor);
-      this.field_146289_q.func_78276_b("Notifications", tabs[2], tabTextY, notifColor);
-      this.field_146289_q.func_78276_b("Nametags", tabs[4], tabTextY, nametagColor);
+      this.fontRendererObj.drawString("Alerts", tabs[0], tabTextY, alertsColor);
+      this.fontRendererObj.drawString("Notifications", tabs[2], tabTextY, notifColor);
+      this.fontRendererObj.drawString("Nametags", tabs[4], tabTextY, nametagColor);
 
       int lineY = panelY + TITLE_BAR_HEIGHT + TAB_BAR_HEIGHT - 2;
-      func_73734_a(panelX + PADDING, lineY, panelX + this.panelWidth - PADDING, lineY + 1, 0x1EFFFFFF);
+      drawRect(panelX + PADDING, lineY, panelX + this.panelWidth - PADDING, lineY + 1, 0x1EFFFFFF);
       int fromTab = Math.max(0, Math.min(TAB_NAMETAGS, (int)Math.floor(this.tabAnim)));
       int toTab = Math.max(0, Math.min(TAB_NAMETAGS, fromTab + 1));
       float t = this.tabAnim - (float)fromTab;
@@ -151,9 +152,9 @@ public class ClickGui extends GuiScreen {
    }
 
    private int[] tabLayout() {
-      int alertsW = this.field_146289_q.func_78256_a("Alerts");
-      int notifW = this.field_146289_q.func_78256_a("Notifications");
-      int nametagW = this.field_146289_q.func_78256_a("Nametags");
+      int alertsW = this.fontRendererObj.getStringWidth("Alerts");
+      int notifW = this.fontRendererObj.getStringWidth("Notifications");
+      int nametagW = this.fontRendererObj.getStringWidth("Nametags");
       int totalW = alertsW + notifW + nametagW + TAB_GAP * 2;
       int baseX = panelX + (this.panelWidth - totalW) / 2;
       int notifX = baseX + alertsW + TAB_GAP;
@@ -181,14 +182,14 @@ public class ClickGui extends GuiScreen {
    private void setTab(int tab) {
       if (activeTab != tab) {
          activeTab = tab;
-         this.field_146297_k.func_147118_V().func_147682_a(
-            PositionedSoundRecord.func_147674_a(new ResourceLocation("gui.button.press"), 1.0F));
+         this.mc.getSoundHandler().playSound(
+            PositionedSoundRecord.create(new ResourceLocation("gui.button.press"), 1.0F));
       }
    }
 
    @Override
-   protected void func_73864_a(int mouseX, int mouseY, int mouseButton) {
-      super.func_73864_a(mouseX, mouseY, mouseButton);
+   protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+      super.mouseClicked(mouseX, mouseY, mouseButton);
       if (mouseButton != 0) {
          return;
       }
@@ -230,8 +231,8 @@ public class ClickGui extends GuiScreen {
    }
 
    @Override
-   protected void func_146273_a(int mouseX, int mouseY, int clickedMouseButton, long timeSinceLastClick) {
-      super.func_146273_a(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
+   protected void mouseClickMove(int mouseX, int mouseY, int clickedMouseButton, long timeSinceLastClick) {
+      super.mouseClickMove(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
       if (activeTab == TAB_NOTIFICATIONS) {
          this.flashCard.mouseDragged(mouseX, mouseY);
       } else if (activeTab == TAB_NAMETAGS) {
@@ -240,29 +241,29 @@ public class ClickGui extends GuiScreen {
    }
 
    @Override
-   protected void func_146286_b(int mouseX, int mouseY, int state) {
+   protected void mouseReleased(int mouseX, int mouseY, int state) {
       this.dragging = false;
       this.flashCard.mouseReleased();
       this.nametagCard.mouseReleased();
-      super.func_146286_b(mouseX, mouseY, state);
+      super.mouseReleased(mouseX, mouseY, state);
    }
 
    @Override
-   protected void func_73869_a(char typedChar, int keyCode) {
-      if (keyCode != 0 && keyCode == ClickGuiKeybind.OPEN_GUI.func_151463_i()) {
-         this.field_146297_k.func_147108_a((GuiScreen)null);
+   protected void keyTyped(char typedChar, int keyCode) throws IOException {
+      if (keyCode != 0 && keyCode == ClickGuiKeybind.OPEN_GUI.getKeyCode()) {
+         this.mc.displayGuiScreen((GuiScreen)null);
          return;
       }
-      super.func_73869_a(typedChar, keyCode);
+      super.keyTyped(typedChar, keyCode);
    }
 
    @Override
-   public boolean func_73868_f() {
+   public boolean doesGuiPauseGame() {
       return false;
    }
 
    @Override
-   public void func_146281_b() {
+   public void onGuiClosed() {
       this.dragging = false;
       this.flashCard.mouseReleased();
       this.nametagCard.mouseReleased();
@@ -270,7 +271,7 @@ public class ClickGui extends GuiScreen {
    }
 
    private void clampPanel() {
-      panelX = Math.max(0, Math.min(panelX, this.field_146294_l - this.panelWidth));
-      panelY = Math.max(0, Math.min(panelY, this.field_146295_m - this.panelHeight));
+      panelX = Math.max(0, Math.min(panelX, this.width - this.panelWidth));
+      panelY = Math.max(0, Math.min(panelY, this.height - this.panelHeight));
    }
 }

@@ -49,7 +49,7 @@ public class AntiCheatData {
       if (player == null) {
          return;
       }
-      UUID uuid = player.func_110124_au();
+      UUID uuid = player.getUniqueID();
       this.autoBlockCheck.forgetPlayer(uuid);
       this.legitScaffoldCheck.forgetPlayer(uuid);
       this.killauraCheck.forgetPlayer(uuid);

@@ -21,6 +21,8 @@ public class FreelookMod extends Mod {
     public static float cameraYaw;
     public static float cameraPitch;
 
+    private Setting keybindingSetting;
+
     public FreelookMod() {
         super(
                 "Freelook",
@@ -28,12 +30,21 @@ public class FreelookMod extends Mod {
                 Type.Mechanic
         );
 
-        Cloud.INSTANCE.settingManager.addSetting(new Setting("Keybinding", this, Keyboard.KEY_R));
+        keybindingSetting = new Setting("Keybinding", this, Keyboard.KEY_R);
+        Cloud.INSTANCE.settingManager.addSetting(keybindingSetting);
+    }
+
+    @Override
+    public void onDisable() {
+        if (cameraToggled) {
+            cameraToggled = false;
+            Cloud.INSTANCE.mc.gameSettings.thirdPersonView = 0;
+        }
     }
 
     @SubscribeEvent
     public void onKey(InputEvent.KeyInputEvent e) {
-        if(Keyboard.isKeyDown(getKey()) && !cameraToggled){
+        if(Keyboard.isKeyDown(keybindingSetting.getKey()) && !cameraToggled){
             cameraYaw = Cloud.INSTANCE.mc.thePlayer.rotationYaw + 180;
             cameraPitch = Cloud.INSTANCE.mc.thePlayer.rotationPitch;
             cameraToggled = true;
@@ -43,7 +54,7 @@ public class FreelookMod extends Mod {
 
     @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent e){
-        if(!Keyboard.isKeyDown(getKey()) && cameraToggled) {
+        if(!Keyboard.isKeyDown(keybindingSetting.getKey()) && cameraToggled) {
             cameraToggled = false;
             Cloud.INSTANCE.mc.gameSettings.thirdPersonView = 0;
         }
@@ -55,9 +66,5 @@ public class FreelookMod extends Mod {
             e.yaw = cameraYaw;
             e.pitch = cameraPitch;
         }
-    }
-
-    private int getKey(){
-        return Cloud.INSTANCE.settingManager.getSettingByModAndName(getName(), "Keybinding").getKey();
     }
 }

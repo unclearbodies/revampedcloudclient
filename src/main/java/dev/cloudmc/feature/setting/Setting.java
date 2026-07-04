@@ -33,6 +33,8 @@ public class Setting {
 
     private boolean[][] cells;
     private int key;
+    
+    private transient Runnable action;
 
     private transient String placeholderText, text;
     private transient int cursorPosition;
@@ -118,6 +120,14 @@ public class Setting {
         this.mod = mod;
 
         this.key = key;
+    }
+
+    public Setting(String name, Mod mod, Runnable action){
+        this.mode = "ActionButton";
+        this.name = name;
+        this.mod = mod;
+
+        this.action = action;
     }
 
     public Setting(String name, Mod mod, String placeholderText, String text, int cursorPosition){
@@ -256,6 +266,14 @@ public class Setting {
 
     public void setKey(int key) {
         this.key = key;
+    }
+
+    public Runnable getAction() {
+        return action;
+    }
+
+    public void setAction(Runnable action) {
+        this.action = action;
     }
 
     public String getPlaceholderText() {

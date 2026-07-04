@@ -19,7 +19,6 @@ public abstract class HudMod {
     private float size;
 
     public HudMod(String name, int x, int y) {
-        MinecraftForge.EVENT_BUS.register(this);
         this.name = name;
         this.x = x;
         this.y = y;

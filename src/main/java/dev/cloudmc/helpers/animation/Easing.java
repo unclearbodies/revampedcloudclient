@@ -83,18 +83,18 @@ public interface Easing {
     /**
      * Sinusoidal easing in - accelerating from zero velocity.
      */
-    Easing SINE_IN = (t, b, c, d) -> -c * (float) Math.cos(t / d * (Math.PI / 2)) + c + b;
+    Easing SINE_IN = (t, b, c, d) -> -c * net.minecraft.util.MathHelper.cos((float) (t / d * (Math.PI / 2))) + c + b;
 
 
     ///////////// SINUSOIDAL EASING: sin(t) ///////////////
     /**
      * Sinusoidal easing out - decelerating to zero velocity.
      */
-    Easing SINE_OUT = (t, b, c, d) -> c * (float) Math.sin(t / d * (Math.PI / 2)) + b;
+    Easing SINE_OUT = (t, b, c, d) -> c * net.minecraft.util.MathHelper.sin((float) (t / d * (Math.PI / 2))) + b;
     /**
      * Sinusoidal easing in/out - accelerating until halfway, then decelerating.
      */
-    Easing SINE_IN_OUT = (t, b, c, d) -> -c / 2 * ((float) Math.cos(Math.PI * t / d) - 1) + b;
+    Easing SINE_IN_OUT = (t, b, c, d) -> -c / 2 * (net.minecraft.util.MathHelper.cos((float) (Math.PI * t / d)) - 1) + b;
     /**
      * Exponential easing in - accelerating from zero velocity.
      */
@@ -286,7 +286,7 @@ public interface Easing {
                 s = p / 4;
             }
             else s = p / (float) (2 * Math.PI) * (float) Math.asin(c / a);
-            return -(a * (float) Math.pow(2, 10 * (t -= 1)) * (float) Math.sin((t * d - s) * (2 * Math.PI) / p)) + b;
+            return -(a * (float) Math.pow(2, 10 * (t -= 1)) * net.minecraft.util.MathHelper.sin((float) ((t * d - s) * (2 * Math.PI) / p))) + b;
         }
     }
 
@@ -314,7 +314,7 @@ public interface Easing {
                 s = p / 4;
             }
             else s = p / (float) (2 * Math.PI) * (float) Math.asin(c / a);
-            return a * (float) Math.pow(2, -10 * t) * (float) Math.sin((t * d - s) * (2 * Math.PI) / p) + c + b;
+            return a * (float) Math.pow(2, -10 * t) * net.minecraft.util.MathHelper.sin((float) ((t * d - s) * (2 * Math.PI) / p)) + c + b;
         }
     }
 
@@ -343,8 +343,8 @@ public interface Easing {
             }
             else s = p / (float) (2 * Math.PI) * (float) Math.asin(c / a);
             if (t < 1)
-                return -.5f * (a * (float) Math.pow(2, 10 * (t -= 1)) * (float) Math.sin((t * d - s) * (2 * Math.PI) / p)) + b;
-            return a * (float) Math.pow(2, -10 * (t -= 1)) * (float) Math.sin((t * d - s) * (2 * Math.PI) / p) * .5f + c + b;
+                return -.5f * (a * (float) Math.pow(2, 10 * (t -= 1)) * net.minecraft.util.MathHelper.sin((float) ((t * d - s) * (2 * Math.PI) / p))) + b;
+            return a * (float) Math.pow(2, -10 * (t -= 1)) * net.minecraft.util.MathHelper.sin((float) ((t * d - s) * (2 * Math.PI) / p)) * .5f + c + b;
         }
     }
 
